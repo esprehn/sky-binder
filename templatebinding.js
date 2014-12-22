@@ -6,34 +6,26 @@ function updateText(node, value) {
   node.data = sanitizeValue(value);
 }
 
-function textBinding(node) {
-  return function(value) {
-    return updateText(node, value);
-  };
-}
-
-function updateAttribute(el, name, value) {
-  el.setAttribute(name, sanitizeValue(value));
-}
-
-function attributeBinding(el, name) {
-  return function(value) {
-    updateAttribute(el, name, value);
-  };
+function updateAttribute(element, name, value) {
+  element.setAttribute(name, sanitizeValue(value));
 }
 
 function bindNode(node, name, observable, oneTime) {
   if (node instanceof Text) {
     if (oneTime)
       return updateText(node, observable);
-    updateText(node, observable.open(textBinding(node)));
+    updateText(node, observable.open(function(value) {
+      return updateText(node, value);
+    }));
     return observable;
   }
 
   if (name == 'style' || name == 'class') {
     if (oneTime)
         return updateAttribute(node, name, observable);
-    updateAttribute(node, name, observable.open(attributeBinding(node, name)));
+    updateAttribute(node, name, observable.open(function(value) {
+      updateAttribute(node, name, value);
+    }));
     return observable;
   }
 
