@@ -104,13 +104,6 @@ var BIND = 'bind';
 var REPEAT = 'repeat';
 var IF = 'if';
 
-var templateAttributeDirectives = {
-  'template': true,
-  'repeat': true,
-  'bind': true,
-  'ref': true
-};
-
 function mixin(to, from) {
   Object.getOwnPropertyNames(from).forEach(function(name) {
     Object.defineProperty(to, name,
