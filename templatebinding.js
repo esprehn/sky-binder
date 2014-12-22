@@ -22,11 +22,6 @@ function attributeBinding(el, name) {
   };
 }
 
-function bindAsAttribute(el, name) {
-  if (name == 'style' || name == 'class')
-    return true;
-}
-
 function bindNode(node, name, observable, oneTime) {
   if (node instanceof Text) {
     if (oneTime)
@@ -35,7 +30,7 @@ function bindNode(node, name, observable, oneTime) {
     return observable;
   }
 
-  if (bindAsAttribute(node, name)) {
+  if (name == 'style' || name == 'class') {
     if (oneTime)
         return updateAttribute(node, name, observable);
     updateAttribute(node, name, observable.open(attributeBinding(node, name)));

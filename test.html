@@ -4,13 +4,16 @@
 <script src="observe.js"></script>
 <script src="templatebinding.js"></script>
 
-<script>
-</script>
+<style>
+.blue { border: 1px solid blue; }
+.orange { border: 1px solid orange; }
+.repeat { margin: 8px; }
+</style>
 
 <template id="template">
-    <span>{{ value }}</span>
+    <span style="color: {{ red }}">{{ value }}</span>
     <template repeat="{{ list }}">
-      <div>{{ item }}</div>
+      <div class="{{ className }} repeat">{{ item }}</div>
     </template>
     <template if="{{ test }}">
       Hello World
@@ -27,10 +30,13 @@ window.onload = function() {
     value: 10,
     test: true,
     url: "http://www.google.com/",
+    red: "red",
     list: [{
       item: "first",
+      className: "blue",
     }, {
       item: "second",
+      className: "orange",
     }],
   };
   document.body.appendChild(template.createInstance(window.model));
