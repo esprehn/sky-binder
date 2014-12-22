@@ -260,17 +260,18 @@ function addEventHandler(element, name, method) {
   });
 }
 
-function parseAttributeBindings(element) {
+function makeBindings() {
   var bindings = [];
-  var ifFound = false;
-  var bindFound = false;
-  var attributes = element.getAttributes();
-
   bindings.if = false;
   bindings.bind = false;
   bindings.repeat = false;
   bindings.eventHandlers = null;
   bindings.children = [];
+  return bindings;
+}
+
+function parseAttributeBindings(element, bindings) {
+  var attributes = element.getAttributes();
 
   for (var i = 0; i < attributes.length; i++) {
     var attr = attributes[i];
@@ -304,23 +305,20 @@ function parseAttributeBindings(element) {
     if (bindings.if && !bindings.bind && !bindings.repeat)
       bindings.bind = parseMustaches('{{}}', BIND, element);
   }
-
-  return bindings;
 }
 
 function getBindings(node) {
+  var bindings = makeBindings();
+
   if (node instanceof Element) {
-    return parseAttributeBindings(node);
-  }
-
-  if (node instanceof Text) {
+    parseAttributeBindings(node, bindings);
+  } else if (node instanceof Text) {
     var tokens = parseMustaches(node.data, 'textContent', node);
-    if (tokens)
-      return ['textContent', tokens];
+    if (tokens) {
+      bindings.push('textContent');
+      bindings.push(tokens);
+    }
   }
-
-  var bindings = [];
-  bindings.children = [];
 
   return bindings;
 }
