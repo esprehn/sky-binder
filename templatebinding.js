@@ -1,3 +1,5 @@
+"use strict";
+
 function sanitizeValue(value) {
   return value == null ? '' : value;
 }
@@ -260,14 +262,14 @@ function addEventHandler(element, name, method) {
   });
 }
 
-function makeBindings() {
-  var bindings = [];
-  bindings.if = false;
-  bindings.bind = false;
-  bindings.repeat = false;
-  bindings.eventHandlers = null;
-  bindings.children = [];
-  return bindings;
+class Bindings extends Array {
+  constructor() {
+    this.if = false;
+    this.bind = false;
+    this.repeat = false;
+    this.eventHandlers = null;
+    this.children = [];
+  }
 }
 
 function parseAttributeBindings(element, bindings) {
@@ -310,7 +312,7 @@ function parseAttributeBindings(element, bindings) {
 }
 
 function getBindings(node) {
-  var bindings = makeBindings();
+  var bindings = new Bindings();
 
   if (node instanceof Element) {
     parseAttributeBindings(node, bindings);
