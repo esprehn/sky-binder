@@ -166,21 +166,6 @@ var contentDescriptor = {
   configurable: true
 };
 
-function ensureSetModelScheduled(template) {
-  if (!template.setModelFn_) {
-    template.setModelFn_ = function() {
-      template.setModelFnScheduled_ = false;
-      var map = getBindings(template);
-      processBindings(template, map, template.model_);
-    };
-  }
-
-  if (!template.setModelFnScheduled_) {
-    template.setModelFnScheduled_ = true;
-    Observer.runEOM_(template.setModelFn_);
-  }
-}
-
 mixin(HTMLTemplateElement.prototype, {
   bind: function(name, value, oneTime) {
     if (name != 'ref')
@@ -277,15 +262,6 @@ mixin(HTMLTemplateElement.prototype, {
     instance.templateCreator_ = undefined;
     instance.protoContent_ = undefined;
     return instance;
-  },
-
-  get model() {
-    return this.model_;
-  },
-
-  set model(model) {
-    this.model_ = model;
-    ensureSetModelScheduled(this);
   },
 
   refChanged_: function() {
