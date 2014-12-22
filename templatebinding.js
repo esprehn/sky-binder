@@ -100,13 +100,6 @@ function searchRefId(node, id) {
   return ref;
 }
 
-function getInstanceRoot(node) {
-  while (node.parentNode) {
-    node = node.parentNode;
-  }
-  return node.templateCreator_ ? node : null;
-}
-
 var BIND = 'bind';
 var REPEAT = 'repeat';
 var IF = 'if';
