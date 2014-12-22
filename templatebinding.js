@@ -343,12 +343,11 @@ function cloneAndBindInstance(node, parent, stagingDocument, bindings, model,
 
 function createInstanceBindingMap(node) {
   var map = getBindings(node);
-  map.children = {};
+  map.children = [];
   var index = 0;
   for (var child = node.firstChild; child; child = child.nextSibling) {
-    map.children[index++] = createInstanceBindingMap(child);
+    map.children.push(createInstanceBindingMap(child));
   }
-
   return map;
 }
 
