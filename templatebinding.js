@@ -111,7 +111,7 @@ mixin(HTMLTemplateElement.prototype, {
     var map = getInstanceBindingMap(content);
     var instance = stagingDocument.createDocumentFragment();
     instance.templateCreator_ = this;
-    instance.protoContent_ = content;
+
     instance.bindings_ = [];
     instance.terminator_ = null;
     var instanceRecord = instance.templateInstance_ = {
@@ -142,7 +142,6 @@ mixin(HTMLTemplateElement.prototype, {
     instanceRecord.firstNode = instance.firstChild;
     instanceRecord.lastNode = instance.lastChild;
     instance.templateCreator_ = undefined;
-    instance.protoContent_ = undefined;
     return instance;
   },
 
