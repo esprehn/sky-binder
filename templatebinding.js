@@ -149,22 +149,11 @@ function getTemplateStagingDocument(template) {
   return template.stagingDocument_;
 }
 
-var templateObserver;
-if (typeof MutationObserver == 'function') {
-  templateObserver = new MutationObserver(function(records) {
-    for (var i = 0; i < records.length; i++) {
-      records[i].target.refChanged_();
-    }
-  });
-}
-
-var contentDescriptor = {
-  get: function() {
-    return this.content_;
-  },
-  enumerable: true,
-  configurable: true
-};
+var templateObserver = new MutationObserver(function(records) {
+  for (var i = 0; i < records.length; i++) {
+    records[i].target.refChanged_();
+  }
+});
 
 mixin(HTMLTemplateElement.prototype, {
   bind: function(name, value, oneTime) {
