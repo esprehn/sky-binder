@@ -319,7 +319,10 @@ function getBindings(node) {
       return ['textContent', tokens];
   }
 
-  return [];
+  var bindings = [];
+  bindings.children = [];
+
+  return bindings;
 }
 
 function cloneAndBindInstance(node, parent, stagingDocument, bindings, model,
