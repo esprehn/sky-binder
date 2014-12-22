@@ -25,8 +25,6 @@ function attributeBinding(el, name) {
 function bindAsAttribute(el, name) {
   if (name == 'style' || name == 'class')
     return true;
-  if (el.tagName == 'a' && name == 'href')
-    return true;
 }
 
 function bindNode(node, name, observable, oneTime) {
