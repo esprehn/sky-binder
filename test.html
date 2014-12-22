@@ -12,6 +12,9 @@
     <template repeat="{{ list }}">
       <div>{{ item }}</div>
     </template>
+    <template if="{{ test }}">
+      Hello World
+    </template>
 </template>
 
 <script>
@@ -21,6 +24,7 @@ window.onload = function() {
   var template = document.getElementById('template');
   window.model = {
     value: 10,
+    test: true,
     list: [{
       item: "first",
     }, {
