@@ -56,15 +56,6 @@ function bindNode(node, name, observable, oneTime) {
   return observable;
 };
 
-function getFragmentRoot(node) {
-  var p;
-  while (p = node.parentNode) {
-    node = p;
-  }
-
-  return node;
-}
-
 var BIND = 'bind';
 var REPEAT = 'repeat';
 var IF = 'if';
