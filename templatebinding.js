@@ -369,19 +369,7 @@ function createInstanceBindingMap(node) {
   return map;
 }
 
-var contentUidCounter = 1;
-
-// TODO(rafaelw): Setup a MutationObserver on content which clears the id
-// so that bindingMaps regenerate when the template.content changes.
-function getContentUid(content) {
-  var id = content.id_;
-  if (!id)
-    id = content.id_ = contentUidCounter++;
-  return id;
-}
-
 function getInstanceBindingMap(content) {
-  var contentId = getContentUid(content);
   var map = content.bindingMap_;
   if (!map) {
     map = content.bindingMap_ =
