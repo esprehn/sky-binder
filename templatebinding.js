@@ -92,16 +92,6 @@ function createInstance(template, model) {
   return instance;
 }
 
-mixin(HTMLTemplateElement.prototype, {
-  clear: function() {
-    if (!this.iterator_)
-      return;
-    this.iterator_.valueChanged();
-    this.iterator_.close()
-    this.iterator_ = undefined;
-  },
-});
-
 // Returns
 //   a) undefined if there are no mustaches.
 //   b) [TEXT, (ONE_TIME?, PATH, DELEGATE_FN, TEXT)+] if there is at least
