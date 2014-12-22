@@ -98,11 +98,6 @@ mixin(HTMLTemplateElement.prototype, {
 
     instance.bindings_ = [];
     instance.terminator_ = null;
-    var instanceRecord = instance.templateInstance_ = {
-      firstNode: null,
-      lastNode: null,
-      model: model
-    };
 
     var i = 0;
     var collectTerminator = false;
@@ -118,13 +113,10 @@ mixin(HTMLTemplateElement.prototype, {
                                        map.children[i++],
                                        model,
                                        instance.bindings_);
-      clone.templateInstance_ = instanceRecord;
       if (collectTerminator)
         instance.terminator_ = clone;
     }
 
-    instanceRecord.firstNode = instance.firstChild;
-    instanceRecord.lastNode = instance.lastChild;
     instance.templateCreator_ = undefined;
     return instance;
   },
@@ -397,14 +389,6 @@ function getInstanceBindingMap(content) {
   }
   return map;
 }
-
-Object.defineProperty(Node.prototype, 'templateInstance', {
-  get: function() {
-    var instance = this.templateInstance_;
-    return instance ? instance :
-        (this.parentNode ? this.parentNode.templateInstance : undefined);
-  }
-});
 
 var emptyInstance = document.createDocumentFragment();
 emptyInstance.bindings_ = [];
