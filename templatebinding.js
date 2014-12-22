@@ -241,10 +241,8 @@ function processBindings(node, bindings, model) {
     var binding = bindNode(node, name, value, tokens.onlyOneTime);
   }
 
-  if (!bindings.isTemplate)
-    return;
-
-  var iter = node.processBindingDirectives_(bindings, model);
+  if (node instanceof HTMLTemplateElement)
+    node.processBindingDirectives_(bindings, model);
 }
 
 function parseWithDefault(el, name) {
@@ -293,7 +291,6 @@ function parseAttributeBindings(element) {
   }
 
   if (element instanceof HTMLTemplateElement) {
-    bindings.isTemplate = true;
     bindings.if = parseWithDefault(element, IF);
     bindings.bind = parseWithDefault(element, BIND);
     bindings.repeat = parseWithDefault(element, REPEAT);
@@ -330,7 +327,7 @@ function cloneAndBindInstance(node, parent, stagingDocument, bindings, model,
                           model);
   }
 
-  if (bindings.isTemplate) {
+  if (node instanceof HTMLTemplateElement) {
     clone.instanceRef_ = node.content;
   }
 
