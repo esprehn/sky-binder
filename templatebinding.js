@@ -270,6 +270,7 @@ function parseAttributeBindings(element) {
   bindings.bind = false;
   bindings.repeat = false;
   bindings.eventHandlers = null;
+  bindings.children = [];
 
   for (var i = 0; i < attributes.length; i++) {
     var attr = attributes[i];
@@ -348,8 +349,6 @@ function cloneAndBindInstance(node, parent, stagingDocument, bindings, model,
 
 function createInstanceBindingMap(node) {
   var map = getBindings(node);
-  map.children = [];
-  var index = 0;
   for (var child = node.firstChild; child; child = child.nextSibling) {
     map.children.push(createInstanceBindingMap(child));
   }
