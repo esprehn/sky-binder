@@ -65,29 +65,6 @@ function getFragmentRoot(node) {
   return node;
 }
 
-function searchRefId(node, id) {
-  if (!id)
-    return;
-
-  var ref;
-  var selector = '#' + id;
-  while (!ref) {
-    node = getFragmentRoot(node);
-
-    if (node.protoContent_)
-      ref = node.protoContent_.querySelector(selector);
-    else if (node.getElementById)
-      ref = node.getElementById(id);
-
-    if (ref || !node.templateCreator_)
-      break
-
-    node = node.templateCreator_;
-  }
-
-  return ref;
-}
-
 var BIND = 'bind';
 var REPEAT = 'repeat';
 var IF = 'if';
@@ -100,37 +77,8 @@ function mixin(to, from) {
 }
 
 var stagingDocument = new Document();
-var templateObserver = new MutationObserver(function(records) {
-  for (var i = 0; i < records.length; i++) {
-    records[i].target.refChanged_();
-  }
-});
 
 mixin(HTMLTemplateElement.prototype, {
-  bind: function(name, value, oneTime) {
-    if (name != 'ref')
-      return Element.prototype.bind.call(this, name, value, oneTime);
-
-    var self = this;
-    var ref = oneTime ? value : value.open(function(ref) {
-      self.setAttribute('ref', ref);
-      self.refChanged_();
-    });
-
-    this.setAttribute('ref', ref);
-    this.refChanged_();
-    if (oneTime)
-      return;
-
-    if (!this.bindings_) {
-      this.bindings_ = { ref: value };
-    } else {
-      this.bindings_.ref = value;
-    }
-
-    return value;
-  },
-
   processBindingDirectives_: function(directives) {
     if (this.iterator_)
       this.iterator_.closeDeps();
@@ -150,19 +98,14 @@ mixin(HTMLTemplateElement.prototype, {
 
     this.iterator_.updateDependencies(directives, this.model_);
 
-    if (templateObserver) {
-      templateObserver.observe(this, { attributes: true,
-                                       attributeFilter: ['ref'] });
-    }
-
     return this.iterator_;
   },
 
   createInstance: function(model) {
-    if (!this.refContent_)
-      this.refContent_ = this.ref_.content;
-    var content = this.refContent_;
-    if (content.firstChild === null)
+    var content = this.content;
+    if (!content.firstChild)
+      content = this.instanceRef_;
+    if (!content.firstChild)
       return emptyInstance;
 
     var map = getInstanceBindingMap(content);
@@ -203,38 +146,14 @@ mixin(HTMLTemplateElement.prototype, {
     return instance;
   },
 
-  refChanged_: function() {
-    if (!this.iterator_ || this.refContent_ === this.ref_.content)
-      return;
-
-    this.refContent_ = undefined;
-    this.iterator_.valueChanged();
-    this.iterator_.updateIteratedValue(this.iterator_.getUpdatedValue());
-  },
-
   clear: function() {
     this.model_ = undefined;
-    if (this.bindings_ && this.bindings_.ref)
-      this.bindings_.ref.close()
-    this.refContent_ = undefined;
     if (!this.iterator_)
       return;
     this.iterator_.valueChanged();
     this.iterator_.close()
     this.iterator_ = undefined;
   },
-
-  get ref_() {
-    var ref = searchRefId(this, this.getAttribute('ref'));
-    if (!ref)
-      ref = this.instanceRef_;
-
-    if (!ref)
-      return this;
-
-    var nextRef = ref.ref_;
-    return nextRef ? nextRef : ref;
-  }
 });
 
 // Returns
@@ -455,7 +374,7 @@ function cloneAndBindInstance(node, parent, stagingDocument, bindings, model,
   }
 
   if (bindings.isTemplate) {
-    clone.instanceRef_ = node;
+    clone.instanceRef_ = node.content;
   }
 
   if (bindings.eventHandlers) {
