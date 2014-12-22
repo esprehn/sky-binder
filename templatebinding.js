@@ -58,7 +58,6 @@ function createInstance(template, model) {
 
   var map = getInstanceBindingMap(content);
   var instance = stagingDocument.createDocumentFragment();
-  instance.templateCreator_ = template;
 
   instance.bindings_ = [];
   instance.terminator_ = null;
@@ -81,7 +80,6 @@ function createInstance(template, model) {
       instance.terminator_ = clone;
   }
 
-  instance.templateCreator_ = undefined;
   return instance;
 }
 
