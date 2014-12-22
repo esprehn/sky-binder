@@ -235,16 +235,21 @@ function processBinding(name, tokens, node, model) {
   return new observe.ObserverTransform(observer, tokens.combinator);
 }
 
-function processBindings(node, bindings, model) {
+function processBindings(node, bindings, model, instanceBindings) {
   for (var i = 0; i < bindings.properties.length; i += 2) {
     var name = bindings.properties[i]
     var tokens = bindings.properties[i + 1];
     var value = processBinding(name, tokens, node, model);
     var binding = bindNode(node, name, value, tokens.onlyOneTime);
+    if (binding && instanceBindings)
+      instanceBindings.push(binding);
   }
 
-  if (node instanceof HTMLTemplateElement)
-    node.processBindingDirectives_(bindings, model);
+  if (node instanceof HTMLTemplateElement) {
+    var iter = node.processBindingDirectives_(bindings, model);
+    if (instanceBindings && iter)
+      instanceBindings.push(iter);
+  }
 }
 
 function parseWithDefault(el, name) {
@@ -328,14 +333,14 @@ function getBindings(node) {
   return bindings;
 }
 
-function cloneAndBindInstance(node, parent, stagingDocument, bindings, model) {
+function cloneAndBindInstance(node, parent, stagingDocument, bindings, model, instanceBindings) {
   var clone = parent.appendChild(stagingDocument.importNode(node, false));
 
   var i = 0;
   for (var child = node.firstChild; child; child = child.nextSibling) {
     cloneAndBindInstance(child, clone, stagingDocument,
                           bindings.children[i++],
-                          model);
+                          model, instanceBindings);
   }
 
   if (node instanceof HTMLTemplateElement) {
@@ -348,7 +353,7 @@ function cloneAndBindInstance(node, parent, stagingDocument, bindings, model) {
     });
   }
 
-  processBindings(clone, bindings, model);
+  processBindings(clone, bindings, model, instanceBindings);
   return clone;
 }
 
