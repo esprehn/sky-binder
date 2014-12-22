@@ -278,9 +278,17 @@ function parseAttributeBindings(element, bindings) {
     var name = attr.name;
     var value = attr.value;
 
-    if (element instanceof HTMLTemplateElement &&
-        (name === IF || name === BIND || name === REPEAT)) {
-      continue;
+    if (element instanceof HTMLTemplateElement) {
+      if (name == IF) {
+        bindings.if = parseWithDefault(element, IF);
+        continue;
+      } else if (name == BIND) {
+        bindings.bind = parseWithDefault(element, BIND);
+        continue;
+      } else if (name == REPEAT) {
+        bindings.repeat = parseWithDefault(element, REPEAT)
+        continue;
+      }
     }
 
     if (name.startsWith('on-')) {
@@ -297,14 +305,8 @@ function parseAttributeBindings(element, bindings) {
     bindings.push(name, tokens);
   }
 
-  if (element instanceof HTMLTemplateElement) {
-    bindings.if = parseWithDefault(element, IF);
-    bindings.bind = parseWithDefault(element, BIND);
-    bindings.repeat = parseWithDefault(element, REPEAT);
-
-    if (bindings.if && !bindings.bind && !bindings.repeat)
-      bindings.bind = parseMustaches('{{}}', BIND, element);
-  }
+  if (bindings.if && !bindings.bind && !bindings.repeat)
+    bindings.bind = parseMustaches('{{}}', BIND, element);
 }
 
 function getBindings(node) {
