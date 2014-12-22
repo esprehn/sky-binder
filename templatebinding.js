@@ -57,28 +57,6 @@ function mixin(to, from) {
 var stagingDocument = new Document();
 
 mixin(HTMLTemplateElement.prototype, {
-  processBindingDirectives_: function(directives, model) {
-    if (this.iterator_)
-      this.iterator_.closeDeps();
-
-    if (!directives.if && !directives.bind && !directives.repeat) {
-      if (this.iterator_) {
-        this.iterator_.close();
-        this.iterator_ = undefined;
-      }
-
-      return;
-    }
-
-    if (!this.iterator_) {
-      this.iterator_ = new TemplateIterator(this);
-    }
-
-    this.iterator_.updateDependencies(directives, model);
-
-    return this.iterator_;
-  },
-
   createInstance: function(model) {
     var content = this.content;
     if (!content.firstChild)
@@ -246,11 +224,33 @@ function processBindings(node, bindings, model, instanceBindings) {
   }
 
   if (node instanceof HTMLTemplateElement) {
-    var iter = node.processBindingDirectives_(bindings, model);
+    var iter = processTemplateBindings(node, bindings, model);
     if (instanceBindings && iter)
       instanceBindings.push(iter);
   }
 }
+
+function processTemplateBindings(template, directives, model) {
+  if (template.iterator_)
+    template.iterator_.closeDeps();
+
+  if (!directives.if && !directives.bind && !directives.repeat) {
+    if (template.iterator_) {
+      template.iterator_.close();
+      template.iterator_ = undefined;
+    }
+
+    return;
+  }
+
+  if (!template.iterator_) {
+    template.iterator_ = new TemplateIterator(template);
+  }
+
+  template.iterator_.updateDependencies(directives, model);
+
+  return template.iterator_;
+};
 
 function parseWithDefault(el, name) {
   var v = el.getAttribute(name);
