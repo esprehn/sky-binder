@@ -9,6 +9,9 @@
 
 <template id="template">
     <span>{{ value }}</span>
+    <template repeat="{{ list }}">
+      <div>{{ item }}</div>
+    </template>
 </template>
 
 <script>
@@ -18,6 +21,11 @@ window.onload = function() {
   var template = document.getElementById('template');
   window.model = {
     value: 10,
+    list: [{
+      item: "first",
+    }, {
+      item: "second",
+    }],
   };
   document.body.appendChild(template.createInstance(window.model));
 };

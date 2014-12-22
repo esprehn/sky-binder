@@ -2,7 +2,7 @@ Element.prototype.getAttributes = function() {
   var result = [];
   var attributes = this.attributes;
   var i = 0;
-  for (var attr = attributes[i]; attr; ++i)
+  for (var attr = attributes[i]; attr; attr = attributes[++i])
     result.push(attr);
   return result;
 };
