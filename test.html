@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+
+<script src="observe.js"></script>
+<script src="templatebinding.js"></script>
+
+<script>
+</script>
+
+<template id="template">
+    <span>{{ value }}</span>
+</template>
+
+<script>
+"use strict";
+
+Element.prototype.getAttributes = function() {
+  var result = [];
+  var attributes = this.attributes;
+  var i = 0;
+  for (var attr = attributes[i]; attr; ++i)
+    result.push(attr);
+  return result;
+};
+
+function Document() {
+  return document.implementation.createHTMLDocument();
+}
+
+window.onload = function() {
+  var template = document.getElementById('template');
+  window.model = {
+    value: 10,
+  };
+  document.body.appendChild(template.createInstance(window.model));
+};
+</script>
