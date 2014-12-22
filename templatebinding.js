@@ -47,13 +47,6 @@ var BIND = 'bind';
 var REPEAT = 'repeat';
 var IF = 'if';
 
-function mixin(to, from) {
-  Object.getOwnPropertyNames(from).forEach(function(name) {
-    Object.defineProperty(to, name,
-                          Object.getOwnPropertyDescriptor(from, name));
-  });
-}
-
 var stagingDocument = new Document();
 
 function createInstance(template, model) {
