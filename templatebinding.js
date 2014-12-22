@@ -63,7 +63,7 @@ function mixin(to, from) {
 var stagingDocument = new Document();
 
 mixin(HTMLTemplateElement.prototype, {
-  processBindingDirectives_: function(directives) {
+  processBindingDirectives_: function(directives, model) {
     if (this.iterator_)
       this.iterator_.closeDeps();
 
@@ -80,7 +80,7 @@ mixin(HTMLTemplateElement.prototype, {
       this.iterator_ = new TemplateIterator(this);
     }
 
-    this.iterator_.updateDependencies(directives, this.model_);
+    this.iterator_.updateDependencies(directives, model);
 
     return this.iterator_;
   },
@@ -130,7 +130,6 @@ mixin(HTMLTemplateElement.prototype, {
   },
 
   clear: function() {
-    this.model_ = undefined;
     if (!this.iterator_)
       return;
     this.iterator_.valueChanged();
@@ -263,8 +262,7 @@ function processBindings(node, bindings, model, instanceBindings) {
   if (!bindings.isTemplate)
     return;
 
-  node.model_ = model;
-  var iter = node.processBindingDirectives_(bindings);
+  var iter = node.processBindingDirectives_(bindings, model);
   if (instanceBindings && iter)
     instanceBindings.push(iter);
 }
