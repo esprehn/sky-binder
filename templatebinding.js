@@ -266,6 +266,11 @@ function parseAttributeBindings(element) {
   var bindFound = false;
   var attributes = element.getAttributes();
 
+  bindings.if = false;
+  bindings.bind = false;
+  bindings.repeat = false;
+  bindings.eventHandlers = null;
+
   for (var i = 0; i < attributes.length; i++) {
     var attr = attributes[i];
     var name = attr.name;
