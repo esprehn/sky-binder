@@ -834,49 +834,6 @@ TemplateIterator.prototype = {
     instanceCache.forEach(function(instance) {
       this.closeInstanceBindings(instance);
     }, this);
-
-    if (this.instancePositionChangedFn_)
-      this.reportInstancesMoved(splices);
-  },
-
-  reportInstanceMoved: function(index) {
-    var instance = this.instances[index];
-    if (instance === emptyInstance)
-      return;
-
-    this.instancePositionChangedFn_(instance.templateInstance_, index);
-  },
-
-  reportInstancesMoved: function(splices) {
-    var index = 0;
-    var offset = 0;
-    for (var i = 0; i < splices.length; i++) {
-      var splice = splices[i];
-      if (offset != 0) {
-        while (index < splice.index) {
-          this.reportInstanceMoved(index);
-          index++;
-        }
-      } else {
-        index = splice.index;
-      }
-
-      while (index < splice.index + splice.addedCount) {
-        this.reportInstanceMoved(index);
-        index++;
-      }
-
-      offset += splice.addedCount - splice.removed.length;
-    }
-
-    if (offset == 0)
-      return;
-
-    var length = this.instances.length;
-    while (index < length) {
-      this.reportInstanceMoved(index);
-      index++;
-    }
   },
 
   closeInstanceBindings: function(instance) {
