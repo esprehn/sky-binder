@@ -412,7 +412,7 @@ function getInstanceBindingMap(content) {
   var map = content.bindingMap_;
   if (!map) {
     map = content.bindingMap_ =
-        createInstanceBindingMap(content, undefined) || [];
+        createInstanceBindingMap(content) || [];
   }
   return map;
 }
@@ -651,7 +651,7 @@ TemplateIterator.prototype = {
           if (model === undefined) {
             instance = emptyInstance;
           } else {
-            instance = template.createInstance(model, undefined);
+            instance = template.createInstance(model);
           }
         }
 
