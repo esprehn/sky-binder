@@ -111,13 +111,6 @@ var templateAttributeDirectives = {
   'ref': true
 };
 
-function isTemplate(el) {
-  if (el.isTemplate_ === undefined)
-    el.isTemplate_ = el.tagName == 'template';
-
-  return el.isTemplate_;
-}
-
 function mixin(to, from) {
   Object.getOwnPropertyNames(from).forEach(function(name) {
     Object.defineProperty(to, name,
@@ -419,7 +412,7 @@ function parseAttributeBindings(element, prepareBindingFn) {
     var name = attr.name;
     var value = attr.value;
 
-    if (isTemplate(element) &&
+    if (element instanceof HTMLTemplateElement &&
         (name === IF || name === BIND || name === REPEAT)) {
       continue;
     }
@@ -439,7 +432,7 @@ function parseAttributeBindings(element, prepareBindingFn) {
     bindings.push(name, tokens);
   }
 
-  if (isTemplate(element)) {
+  if (element instanceof HTMLTemplateElement) {
     bindings.isTemplate = true;
     bindings.if = parseWithDefault(element, IF, prepareBindingFn);
     bindings.bind = parseWithDefault(element, BIND, prepareBindingFn);
