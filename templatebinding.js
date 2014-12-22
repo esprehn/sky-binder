@@ -160,7 +160,7 @@ mixin(HTMLTemplateElement.prototype, {
 //   a) undefined if there are no mustaches.
 //   b) [TEXT, (ONE_TIME?, PATH, DELEGATE_FN, TEXT)+] if there is at least
 //      one mustache.
-function parseMustaches(s, name, node, prepareBindingFn) {
+function parseMustaches(s, name, node) {
   if (!s || !s.length)
     return;
 
@@ -286,9 +286,9 @@ function processBindings(node, bindings, model, instanceBindings) {
     instanceBindings.push(iter);
 }
 
-function parseWithDefault(el, name, prepareBindingFn) {
+function parseWithDefault(el, name) {
   var v = el.getAttribute(name);
-  return parseMustaches(v == '' ? '{{}}' : v, name, el, prepareBindingFn);
+  return parseMustaches(v == '' ? '{{}}' : v, name, el);
 }
 
 function addEventHandler(element, name, method) {
@@ -301,7 +301,7 @@ function addEventHandler(element, name, method) {
   });
 }
 
-function parseAttributeBindings(element, prepareBindingFn) {
+function parseAttributeBindings(element) {
   var bindings = [];
   var ifFound = false;
   var bindFound = false;
@@ -324,8 +324,7 @@ function parseAttributeBindings(element, prepareBindingFn) {
       continue;
     }
 
-    var tokens = parseMustaches(value, name, element,
-                                prepareBindingFn);
+    var tokens = parseMustaches(value, name, element);
     if (!tokens)
       continue;
 
@@ -334,25 +333,24 @@ function parseAttributeBindings(element, prepareBindingFn) {
 
   if (element instanceof HTMLTemplateElement) {
     bindings.isTemplate = true;
-    bindings.if = parseWithDefault(element, IF, prepareBindingFn);
-    bindings.bind = parseWithDefault(element, BIND, prepareBindingFn);
-    bindings.repeat = parseWithDefault(element, REPEAT, prepareBindingFn);
+    bindings.if = parseWithDefault(element, IF);
+    bindings.bind = parseWithDefault(element, BIND);
+    bindings.repeat = parseWithDefault(element, REPEAT);
 
     if (bindings.if && !bindings.bind && !bindings.repeat)
-      bindings.bind = parseMustaches('{{}}', BIND, element, prepareBindingFn);
+      bindings.bind = parseMustaches('{{}}', BIND, element);
   }
 
   return bindings;
 }
 
-function getBindings(node, prepareBindingFn) {
+function getBindings(node) {
   if (node instanceof Element) {
-    return parseAttributeBindings(node, prepareBindingFn);
+    return parseAttributeBindings(node);
   }
 
   if (node instanceof Text) {
-    var tokens = parseMustaches(node.data, 'textContent', node,
-                                prepareBindingFn);
+    var tokens = parseMustaches(node.data, 'textContent', node);
     if (tokens)
       return ['textContent', tokens];
   }
@@ -387,12 +385,12 @@ function cloneAndBindInstance(node, parent, stagingDocument, bindings, model,
   return clone;
 }
 
-function createInstanceBindingMap(node, prepareBindingFn) {
-  var map = getBindings(node, prepareBindingFn);
+function createInstanceBindingMap(node) {
+  var map = getBindings(node);
   map.children = {};
   var index = 0;
   for (var child = node.firstChild; child; child = child.nextSibling) {
-    map.children[index++] = createInstanceBindingMap(child, prepareBindingFn);
+    map.children[index++] = createInstanceBindingMap(child);
   }
 
   return map;
