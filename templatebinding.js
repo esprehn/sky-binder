@@ -1,18 +1,3 @@
-Node.prototype.bind = function(name, observable, oneTime) {
-  var self = this;
-
-  if (oneTime) {
-    this[name] = observable;
-    return;
-  }
-
-  this[name] = observable.open(function(value) {
-    self[name] = value;
-  });
-
-  return observable;
-};
-
 function sanitizeValue(value) {
   return value == null ? '' : value;
 }
@@ -25,18 +10,6 @@ function textBinding(node) {
   return function(value) {
     return updateText(node, value);
   };
-}
-
-Text.prototype.bind = function(name, value, oneTime) {
-  if (name !== 'textContent')
-    return Node.prototype.bind.call(this, name, value, oneTime);
-
-  if (oneTime)
-    return updateText(this, value);
-
-  var observable = value;
-  updateText(this, observable.open(textBinding(this)));
-  return observable;
 }
 
 function updateAttribute(el, name, value) {
@@ -56,17 +29,32 @@ function bindAsAttribute(el, name) {
     return true;
 }
 
-Element.prototype.bind = function(name, value, oneTime) {
-  if (!bindAsAttribute(this, name))
-    return Node.prototype.bind.call(this, name, value, oneTime);
+function bindNode(node, name, observable, oneTime) {
+  if (node instanceof Text) {
+    if (oneTime)
+      return updateText(node, observable);
+    updateText(node, observable.open(textBinding(node)));
+    return observable;
+  }
 
-  if (oneTime)
-    return updateAttribute(this, name, value);
+  if (bindAsAttribute(node, name)) {
+    if (oneTime)
+        return updateAttribute(node, name, observable);
+    updateAttribute(node, name, observable.open(attributeBinding(node, name)));
+    return observable;
+  }
 
-  var observable = value;
-  updateAttribute(this, name, observable.open(attributeBinding(this, name)));
+  if (oneTime) {
+    node[name] = observable;
+    return;
+  }
+
+  node[name] = observable.open(function(value) {
+    node[name] = value;
+  });
+
   return observable;
-}
+};
 
 function getFragmentRoot(node) {
   var p;
@@ -365,7 +353,7 @@ function processBindings(node, bindings, model, instanceBindings) {
     var name = bindings[i]
     var tokens = bindings[i + 1];
     var value = processBinding(name, tokens, node, model);
-    var binding = node.bind(name, value, tokens.onlyOneTime);
+    var binding = bindNode(node, name, value, tokens.onlyOneTime);
     if (binding && instanceBindings)
       instanceBindings.push(binding);
   }
