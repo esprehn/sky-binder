@@ -132,23 +132,7 @@ function mixin(to, from) {
   });
 }
 
-function getTemplateStagingDocument(template) {
-  if (!template.stagingDocument_) {
-    var owner = template.ownerDocument;
-    if (!owner.stagingDocument_) {
-      // FIXME(sky): Does this need to create a Document without a registration
-      // context?
-      owner.stagingDocument_ = new Document();
-      owner.stagingDocument_.isStagingDocument = true;
-      owner.stagingDocument_.stagingDocument_ = owner.stagingDocument_;
-    }
-
-    template.stagingDocument_ = owner.stagingDocument_;
-  }
-
-  return template.stagingDocument_;
-}
-
+var stagingDocument = new Document();
 var templateObserver = new MutationObserver(function(records) {
   for (var i = 0; i < records.length; i++) {
     records[i].target.refChanged_();
@@ -215,7 +199,6 @@ mixin(HTMLTemplateElement.prototype, {
       return emptyInstance;
 
     var map = getInstanceBindingMap(content);
-    var stagingDocument = getTemplateStagingDocument(this);
     var instance = stagingDocument.createDocumentFragment();
     instance.templateCreator_ = this;
     instance.protoContent_ = content;

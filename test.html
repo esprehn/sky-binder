@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 
+<script src="sky-shim.js"></script>
 <script src="observe.js"></script>
 <script src="templatebinding.js"></script>
 
@@ -12,19 +13,6 @@
 
 <script>
 "use strict";
-
-Element.prototype.getAttributes = function() {
-  var result = [];
-  var attributes = this.attributes;
-  var i = 0;
-  for (var attr = attributes[i]; attr; ++i)
-    result.push(attr);
-  return result;
-};
-
-function Document() {
-  return document.implementation.createHTMLDocument();
-}
 
 window.onload = function() {
   var template = document.getElementById('template');
