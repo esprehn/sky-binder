@@ -56,43 +56,43 @@ function mixin(to, from) {
 
 var stagingDocument = new Document();
 
+function createInstance(template, model) {
+  var content = template.content;
+  if (!content.firstChild)
+    content = template.instanceRef_;
+  if (!content.firstChild)
+    return emptyInstance;
+
+  var map = getInstanceBindingMap(content);
+  var instance = stagingDocument.createDocumentFragment();
+  instance.templateCreator_ = template;
+
+  instance.bindings_ = [];
+  instance.terminator_ = null;
+
+  var i = 0;
+  var collectTerminator = false;
+  for (var child = content.firstChild; child; child = child.nextSibling) {
+    // The terminator of the instance is the clone of the last child of the
+    // content. If the last child is an active template, it may produce
+    // instances as a result of production, so simply collecting the last
+    // child of the instance after it has finished producing may be wrong.
+    if (child.nextSibling === null)
+      collectTerminator = true;
+
+    var clone = cloneAndBindInstance(child, instance, stagingDocument,
+                                     map.children[i++],
+                                     model,
+                                     instance.bindings_);
+    if (collectTerminator)
+      instance.terminator_ = clone;
+  }
+
+  instance.templateCreator_ = undefined;
+  return instance;
+}
+
 mixin(HTMLTemplateElement.prototype, {
-  createInstance: function(model) {
-    var content = this.content;
-    if (!content.firstChild)
-      content = this.instanceRef_;
-    if (!content.firstChild)
-      return emptyInstance;
-
-    var map = getInstanceBindingMap(content);
-    var instance = stagingDocument.createDocumentFragment();
-    instance.templateCreator_ = this;
-
-    instance.bindings_ = [];
-    instance.terminator_ = null;
-
-    var i = 0;
-    var collectTerminator = false;
-    for (var child = content.firstChild; child; child = child.nextSibling) {
-      // The terminator of the instance is the clone of the last child of the
-      // content. If the last child is an active template, it may produce
-      // instances as a result of production, so simply collecting the last
-      // child of the instance after it has finished producing may be wrong.
-      if (child.nextSibling === null)
-        collectTerminator = true;
-
-      var clone = cloneAndBindInstance(child, instance, stagingDocument,
-                                       map.children[i++],
-                                       model,
-                                       instance.bindings_);
-      if (collectTerminator)
-        instance.terminator_ = clone;
-    }
-
-    instance.templateCreator_ = undefined;
-    return instance;
-  },
-
   clear: function() {
     if (!this.iterator_)
       return;
@@ -599,7 +599,7 @@ TemplateIterator.prototype = {
           if (model === undefined) {
             instance = emptyInstance;
           } else {
-            instance = template.createInstance(model);
+            instance = createInstance(template, model);
           }
         }
 
