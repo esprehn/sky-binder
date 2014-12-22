@@ -236,9 +236,9 @@ function processBinding(name, tokens, node, model) {
 }
 
 function processBindings(node, bindings, model) {
-  for (var i = 0; i < bindings.length; i += 2) {
-    var name = bindings[i]
-    var tokens = bindings[i + 1];
+  for (var i = 0; i < bindings.properties.length; i += 2) {
+    var name = bindings.properties[i]
+    var tokens = bindings.properties[i + 1];
     var value = processBinding(name, tokens, node, model);
     var binding = bindNode(node, name, value, tokens.onlyOneTime);
   }
@@ -262,13 +262,14 @@ function addEventHandler(element, name, method) {
   });
 }
 
-class Bindings extends Array {
+class Bindings {
   constructor() {
     this.if = false;
     this.bind = false;
     this.repeat = false;
     this.eventHandlers = null;
     this.children = [];
+    this.properties = [];
   }
 }
 
@@ -304,7 +305,7 @@ function parseAttributeBindings(element, bindings) {
     if (!tokens)
       continue;
 
-    bindings.push(name, tokens);
+    bindings.properties.push(name, tokens);
   }
 
   if (bindings.if && !bindings.bind && !bindings.repeat)
@@ -319,16 +320,15 @@ function getBindings(node) {
   } else if (node instanceof Text) {
     var tokens = parseMustaches(node.data, 'textContent', node);
     if (tokens) {
-      bindings.push('textContent');
-      bindings.push(tokens);
+      bindings.properties.push('textContent');
+      bindings.properties.push(tokens);
     }
   }
 
   return bindings;
 }
 
-function cloneAndBindInstance(node, parent, stagingDocument, bindings, model,
-                              instanceRecord) {
+function cloneAndBindInstance(node, parent, stagingDocument, bindings, model) {
   var clone = parent.appendChild(stagingDocument.importNode(node, false));
 
   var i = 0;
@@ -363,8 +363,7 @@ function createInstanceBindingMap(node) {
 function getInstanceBindingMap(content) {
   var map = content.bindingMap_;
   if (!map) {
-    map = content.bindingMap_ =
-        createInstanceBindingMap(content) || [];
+    map = content.bindingMap_ = createInstanceBindingMap(content);
   }
   return map;
 }
