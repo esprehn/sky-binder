@@ -648,10 +648,6 @@ TemplateIterator.prototype = {
         if (instance) {
           instanceCache.delete(model);
         } else {
-          if (this.instanceModelFn_) {
-            model = this.instanceModelFn_(model);
-          }
-
           if (model === undefined) {
             instance = emptyInstance;
           } else {
