@@ -87,7 +87,7 @@ function createInstance(template, model) {
 //   a) undefined if there are no mustaches.
 //   b) [TEXT, (ONE_TIME?, PATH, DELEGATE_FN, TEXT)+] if there is at least
 //      one mustache.
-function parseMustaches(s, name, node) {
+function parseMustaches(s) {
   if (!s || !s.length)
     return;
 
@@ -233,8 +233,8 @@ function processTemplateBindings(template, directives, model) {
   return template.iterator_;
 };
 
-function parseWithDefault(element, name, value) {
-  return parseMustaches(value == '' ? '{{}}' : value, name, element);
+function parseWithDefault(value) {
+  return parseMustaches(value == '' ? '{{}}' : value);
 }
 
 function addEventHandler(element, name, method) {
@@ -269,13 +269,13 @@ function parseAttributeBindings(element, bindings) {
 
     if (element instanceof HTMLTemplateElement) {
       if (name == IF) {
-        bindings.if = parseWithDefault(element, IF, value);
+        bindings.if = parseWithDefault(value);
         continue;
       } else if (name == BIND) {
-        bindings.bind = parseWithDefault(element, BIND, value);
+        bindings.bind = parseWithDefault(value);
         continue;
       } else if (name == REPEAT) {
-        bindings.repeat = parseWithDefault(element, REPEAT, value);
+        bindings.repeat = parseWithDefault(value);
         continue;
       }
     }
@@ -287,7 +287,7 @@ function parseAttributeBindings(element, bindings) {
       continue;
     }
 
-    var tokens = parseMustaches(value, name, element);
+    var tokens = parseMustaches(value);
     if (!tokens)
       continue;
 
@@ -298,7 +298,7 @@ function parseAttributeBindings(element, bindings) {
   }
 
   if (bindings.if && !bindings.bind && !bindings.repeat)
-    bindings.bind = parseMustaches('{{}}', BIND, element);
+    bindings.bind = parseMustaches('{{}}');
 }
 
 function getBindings(node) {
@@ -307,7 +307,7 @@ function getBindings(node) {
   if (node instanceof Element) {
     parseAttributeBindings(node, bindings);
   } else if (node instanceof Text) {
-    var tokens = parseMustaches(node.data, 'textContent', node);
+    var tokens = parseMustaches(node.data);
     if (tokens) {
       bindings.properties.push({
         name: 'textContent',
