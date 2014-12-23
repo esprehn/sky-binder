@@ -251,7 +251,7 @@ function addEventHandler(element, name, method) {
   });
 }
 
-class Bindings {
+class Binding {
   constructor(node) {
     this.if = false;
     this.bind = false;
@@ -271,7 +271,7 @@ class Bindings {
   }
 }
 
-function parseAttributeBindings(element, bindings) {
+function parseAttributeBindings(element, binding) {
   var attributes = element.getAttributes();
 
   for (var i = 0; i < attributes.length; i++) {
@@ -281,21 +281,21 @@ function parseAttributeBindings(element, bindings) {
 
     if (element instanceof HTMLTemplateElement) {
       if (name == IF) {
-        bindings.if = parseWithDefault(value);
+        binding.if = parseWithDefault(value);
         continue;
       } else if (name == BIND) {
-        bindings.bind = parseWithDefault(value);
+        binding.bind = parseWithDefault(value);
         continue;
       } else if (name == REPEAT) {
-        bindings.repeat = parseWithDefault(value);
+        binding.repeat = parseWithDefault(value);
         continue;
       }
     }
 
     if (name.startsWith('on-')) {
-      if (!bindings.eventHandlers)
-        bindings.eventHandlers = new Map();
-      bindings.eventHandlers.set(name.substring(3), value);
+      if (!binding.eventHandlers)
+        binding.eventHandlers = new Map();
+      binding.eventHandlers.set(name.substring(3), value);
       continue;
     }
 
@@ -303,25 +303,25 @@ function parseAttributeBindings(element, bindings) {
     if (!tokens)
       continue;
 
-    bindings.properties.push({
+    binding.properties.push({
       name: name,
       tokens: tokens,
     });
   }
 
-  if (bindings.if && !bindings.bind && !bindings.repeat)
-    bindings.bind = parseMustaches('{{}}');
+  if (binding.if && !binding.bind && !binding.repeat)
+    binding.bind = parseMustaches('{{}}');
 }
 
 function createBindings(node) {
-  var bindings = new Bindings(node);
+  var binding = new Binding(node);
 
   if (node instanceof Element) {
-    parseAttributeBindings(node, bindings);
+    parseAttributeBindings(node, binding);
   } else if (node instanceof Text) {
     var tokens = parseMustaches(node.data);
     if (tokens) {
-      bindings.properties.push({
+      binding.properties.push({
         name: 'textContent',
         tokens: tokens,
       });
@@ -329,10 +329,10 @@ function createBindings(node) {
   }
 
   for (var child = node.firstChild; child; child = child.nextSibling) {
-    bindings.children.push(createBindings(child));
+    binding.children.push(createBindings(child));
   }
 
-  return bindings;
+  return binding;
 }
 
 function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
