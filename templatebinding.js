@@ -256,6 +256,7 @@ class Bindings {
     this.eventHandlers = null;
     this.children = [];
     this.properties = [];
+    Object.preventExtensions(this);
   }
 }
 
