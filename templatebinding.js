@@ -237,10 +237,6 @@ function processTemplateBindings(template, directives, model) {
   return template.iterator_;
 };
 
-function parseWithDefault(value) {
-  return parseMustaches(value == '' ? '{{}}' : value);
-}
-
 function addEventHandler(element, name, method) {
   element.addEventListener(name, function(event) {
     var scope = element.ownerScope;
@@ -281,13 +277,13 @@ function parseAttributeBindings(element, binding) {
 
     if (element instanceof HTMLTemplateElement) {
       if (name == IF) {
-        binding.if = parseWithDefault(value);
+        binding.if = parseMustaches(value || '{{}}');
         continue;
       } else if (name == BIND) {
-        binding.bind = parseWithDefault(value);
+        binding.bind = parseMustaches(value || '{{}}');
         continue;
       } else if (name == REPEAT) {
-        binding.repeat = parseWithDefault(value);
+        binding.repeat = parseMustaches(value || '{{}}');
         continue;
       }
     }
