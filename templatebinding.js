@@ -233,9 +233,8 @@ function processTemplateBindings(template, directives, model) {
   return template.iterator_;
 };
 
-function parseWithDefault(el, name) {
-  var v = el.getAttribute(name);
-  return parseMustaches(v == '' ? '{{}}' : v, name, el);
+function parseWithDefault(element, name, value) {
+  return parseMustaches(value == '' ? '{{}}' : value, name, element);
 }
 
 function addEventHandler(element, name, method) {
@@ -270,13 +269,13 @@ function parseAttributeBindings(element, bindings) {
 
     if (element instanceof HTMLTemplateElement) {
       if (name == IF) {
-        bindings.if = parseWithDefault(element, IF);
+        bindings.if = parseWithDefault(element, IF, value);
         continue;
       } else if (name == BIND) {
-        bindings.bind = parseWithDefault(element, BIND);
+        bindings.bind = parseWithDefault(element, BIND, value);
         continue;
       } else if (name == REPEAT) {
-        bindings.repeat = parseWithDefault(element, REPEAT)
+        bindings.repeat = parseWithDefault(element, REPEAT, value);
         continue;
       }
     }
