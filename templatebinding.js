@@ -56,7 +56,11 @@ function createInstance(template, model) {
   if (!content.firstChild)
     return emptyInstance;
 
-  var map = getInstanceBindingMap(content);
+  var map = content.bindingMap_;
+  if (!map) {
+    map = content.bindingMap_ = createInstanceBindingMap(content);
+  }
+
   var instance = stagingDocument.createDocumentFragment();
 
   instance.bindings_ = [];
@@ -354,14 +358,6 @@ function createInstanceBindingMap(node) {
   var map = getBindings(node);
   for (var child = node.firstChild; child; child = child.nextSibling) {
     map.children.push(createInstanceBindingMap(child));
-  }
-  return map;
-}
-
-function getInstanceBindingMap(content) {
-  var map = content.bindingMap_;
-  if (!map) {
-    map = content.bindingMap_ = createInstanceBindingMap(content);
   }
   return map;
 }
