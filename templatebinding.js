@@ -196,8 +196,8 @@ function processBinding(name, tokens, node, model) {
 
 function processBindings(node, bindings, model, instanceBindings) {
   for (var i = 0; i < bindings.properties.length; i += 2) {
-    var name = bindings.properties[i]
-    var tokens = bindings.properties[i + 1];
+    var name = bindings.properties[i].name;
+    var tokens = bindings.properties[i].tokens;
     var value = processBinding(name, tokens, node, model);
     var binding = bindNode(node, name, value, tokens.onlyOneTime);
     if (binding && instanceBindings)
@@ -291,7 +291,10 @@ function parseAttributeBindings(element, bindings) {
     if (!tokens)
       continue;
 
-    bindings.properties.push(name, tokens);
+    bindings.properties.push({
+      name: name,
+      tokens: tokens,
+    });
   }
 
   if (bindings.if && !bindings.bind && !bindings.repeat)
@@ -306,8 +309,10 @@ function getBindings(node) {
   } else if (node instanceof Text) {
     var tokens = parseMustaches(node.data, 'textContent', node);
     if (tokens) {
-      bindings.properties.push('textContent');
-      bindings.properties.push(tokens);
+      bindings.properties.push({
+        name: 'textContent',
+        tokens: tokens,
+      });
     }
   }
 
