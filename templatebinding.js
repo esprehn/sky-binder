@@ -72,7 +72,7 @@ function createInstance(template, model) {
     if (child.nextSibling === null)
       collectTerminator = true;
 
-    var clone = cloneAndBindInstance(instance, stagingDocument,
+    var clone = cloneAndBindInstance(instance,
                                      map.children[i++],
                                      model,
                                      instance.bindings_);
@@ -327,11 +327,11 @@ function getBindings(node) {
   return bindings;
 }
 
-function cloneAndBindInstance(parent, stagingDocument, bindings, model, instanceBindings) {
+function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
   var clone = parent.appendChild(bindings.cloneNode());
 
   for (var i = 0; i < bindings.children.length; ++i) {
-    cloneAndBindInstance(clone, stagingDocument,
+    cloneAndBindInstance(clone,
                           bindings.children[i],
                           model, instanceBindings);
   }
