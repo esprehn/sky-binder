@@ -72,7 +72,7 @@ function createInstance(template, model) {
     if (child.nextSibling === null)
       collectTerminator = true;
 
-    var clone = cloneAndBindInstance(child, instance, stagingDocument,
+    var clone = cloneAndBindInstance(instance, stagingDocument,
                                      map.children[i++],
                                      model,
                                      instance.bindings_);
@@ -248,14 +248,22 @@ function addEventHandler(element, name, method) {
 }
 
 class Bindings {
-  constructor() {
+  constructor(node) {
     this.if = false;
     this.bind = false;
     this.repeat = false;
     this.eventHandlers = null;
     this.children = [];
     this.properties = [];
+    this.node = node;
     Object.preventExtensions(this);
+  }
+
+  cloneNode() {
+    // TODO(esprehn): In sky instead of needing to use a staging docuemnt per
+    // custom element registry we're going to need to use the current module's
+    // registry.
+    return stagingDocument.importNode(this.node, false);
   }
 }
 
@@ -302,7 +310,7 @@ function parseAttributeBindings(element, bindings) {
 }
 
 function getBindings(node) {
-  var bindings = new Bindings();
+  var bindings = new Bindings(node);
 
   if (node instanceof Element) {
     parseAttributeBindings(node, bindings);
@@ -319,18 +327,17 @@ function getBindings(node) {
   return bindings;
 }
 
-function cloneAndBindInstance(node, parent, stagingDocument, bindings, model, instanceBindings) {
-  var clone = parent.appendChild(stagingDocument.importNode(node, false));
+function cloneAndBindInstance(parent, stagingDocument, bindings, model, instanceBindings) {
+  var clone = parent.appendChild(bindings.cloneNode());
 
-  var i = 0;
-  for (var child = node.firstChild; child; child = child.nextSibling) {
-    cloneAndBindInstance(child, clone, stagingDocument,
-                          bindings.children[i++],
+  for (var i = 0; i < bindings.children.length; ++i) {
+    cloneAndBindInstance(clone, stagingDocument,
+                          bindings.children[i],
                           model, instanceBindings);
   }
 
-  if (node instanceof HTMLTemplateElement) {
-    clone.instanceRef_ = node.content;
+  if (clone instanceof HTMLTemplateElement) {
+    clone.instanceRef_ = bindings.node.content;
   }
 
   if (bindings.eventHandlers) {
