@@ -256,7 +256,7 @@ class Binding {
     this.if = false;
     this.bind = false;
     this.repeat = false;
-    this.eventHandlers = null;
+    this.eventHandlers = [];
     this.children = [];
     this.properties = [];
     this.node = node;
@@ -293,9 +293,10 @@ function parseAttributeBindings(element, binding) {
     }
 
     if (name.startsWith('on-')) {
-      if (!binding.eventHandlers)
-        binding.eventHandlers = new Map();
-      binding.eventHandlers.set(name.substring(3), value);
+      binding.eventHandlers.push({
+        eventName: name.substring(3),
+        method: value
+      });
       continue;
     }
 
@@ -348,10 +349,9 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
     clone.instanceRef_ = bindings.node.content;
   }
 
-  if (bindings.eventHandlers) {
-    bindings.eventHandlers.forEach(function(handler, eventName) {
-      addEventHandler(clone, eventName, handler);
-    });
+  for (var i = 0; i < bindings.eventHandlers.length; ++i) {
+    var handler = bindings.eventHandlers[i];
+    addEventHandler(clone, handler.eventName, handler.method);
   }
 
   processBindings(clone, bindings, model, instanceBindings);
