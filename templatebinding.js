@@ -58,7 +58,7 @@ function createInstance(template, model) {
 
   var map = content.bindingMap_;
   if (!map) {
-    map = content.bindingMap_ = createInstanceBindingMap(content);
+    map = content.bindingMap_ = createBindings(content);
   }
 
   var instance = stagingDocument.createDocumentFragment();
@@ -313,7 +313,7 @@ function parseAttributeBindings(element, bindings) {
     bindings.bind = parseMustaches('{{}}');
 }
 
-function getBindings(node) {
+function createBindings(node) {
   var bindings = new Bindings(node);
 
   if (node instanceof Element) {
@@ -326,6 +326,10 @@ function getBindings(node) {
         tokens: tokens,
       });
     }
+  }
+
+  for (var child = node.firstChild; child; child = child.nextSibling) {
+    bindings.children.push(createBindings(child));
   }
 
   return bindings;
@@ -352,14 +356,6 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
 
   processBindings(clone, bindings, model, instanceBindings);
   return clone;
-}
-
-function createInstanceBindingMap(node) {
-  var map = getBindings(node);
-  for (var child = node.firstChild; child; child = child.nextSibling) {
-    map.children.push(createInstanceBindingMap(child));
-  }
-  return map;
 }
 
 var emptyInstance = document.createDocumentFragment();
