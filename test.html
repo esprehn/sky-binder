@@ -5,21 +5,23 @@
 <script src="template-iterator.js"></script>
 <script src="templatebinding.js"></script>
 
-<style>
-.blue { border: 1px solid blue; }
-.orange { border: 1px solid orange; }
-.repeat { margin: 8px; }
-</style>
+<div id="host"></div>
 
 <template id="template">
-    <span style="color: {{ red }}">{{ value }}</span>
-    <template repeat="{{ list }}">
-      <div class="{{ className }} repeat">{{ item }}</div>
-    </template>
-    <template if="{{ test }}">
-      Hello World
-    </template>
-    <a href="{{ url }}">{{ url }}</a>
+  <style>
+  .blue { border: 1px solid blue; }
+  .orange { border: 1px solid orange; }
+  .repeat { margin: 8px; }
+  </style>
+  <span style="color: {{ red }}">{{ value }}</span>
+  <template repeat="{{ list }}">
+    <div class="{{ className }} repeat">{{ item }}</div>
+  </template>
+  <template if="{{ test }}">
+    Hello World
+  </template>
+  <a href="{{ url }}">{{ url }}</a>
+  <span on-click="handleClick">Click me</span>
 </template>
 
 <script>
@@ -27,6 +29,10 @@
 
 window.onload = function() {
   var template = document.getElementById('template');
+  var host = document.getElementById('host');
+  host.handleClick = function(e) {
+    console.log(e);
+  };
   window.model = {
     value: 10,
     test: true,
@@ -40,6 +46,6 @@ window.onload = function() {
       className: "orange",
     }],
   };
-  document.body.appendChild(createInstance(template, window.model));
+  host.createShadowRoot().appendChild(createInstance(template, window.model));
 };
 </script>
