@@ -507,7 +507,7 @@ TemplateIterator.prototype = {
     if (!terminator)
       return this.getLastInstanceNode(index - 1);
 
-    if (terminator.nodeType !== Node.ELEMENT_NODE ||
+    if (!(terminator instanceof Element) ||
         this.templateElement_ === terminator) {
       return terminator;
     }
