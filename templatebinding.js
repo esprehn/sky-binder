@@ -202,7 +202,7 @@ function processBinding(name, tokens, node, model) {
 }
 
 function processBindings(node, bindings, model, instanceBindings) {
-  for (var i = 0; i < bindings.properties.length; i += 2) {
+  for (var i = 0; i < bindings.properties.length; ++i) {
     var name = bindings.properties[i].name;
     var tokens = bindings.properties[i].tokens;
     var value = processBinding(name, tokens, node, model);
