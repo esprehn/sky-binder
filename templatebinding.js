@@ -266,6 +266,10 @@ class Binding {
     if (clone instanceof HTMLTemplateElement)
       clone.instanceRef_ = this.node.content;
 
+    this.eventHandlers.forEach(function(handler) {
+      addEventHandler(clone, handler.eventName, handler.method);
+    });
+
     return clone;
   }
 }
@@ -336,11 +340,6 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
     cloneAndBindInstance(clone,
                           bindings.children[i],
                           model, instanceBindings);
-  }
-
-  for (var i = 0; i < bindings.eventHandlers.length; ++i) {
-    var handler = bindings.eventHandlers[i];
-    addEventHandler(clone, handler.eventName, handler.method);
   }
 
   processBindings(clone, bindings, model, instanceBindings);
