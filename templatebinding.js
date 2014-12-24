@@ -334,13 +334,13 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
     var tokens = bindings.properties[i].tokens;
     var value = processBinding(name, tokens, clone, model);
     var binding = bindNode(clone, name, value, tokens.onlyOneTime);
-    if (binding && instanceBindings)
+    if (binding)
       instanceBindings.push(binding);
   }
 
   if (clone instanceof HTMLTemplateElement) {
     var iter = processTemplateBindings(clone, bindings, model);
-    if (instanceBindings && iter)
+    if (iter)
       instanceBindings.push(iter);
   }
 
