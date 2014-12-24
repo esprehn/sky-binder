@@ -261,7 +261,12 @@ class Binding {
     // TODO(esprehn): In sky instead of needing to use a staging docuemnt per
     // custom element registry we're going to need to use the current module's
     // registry.
-    return stagingDocument.importNode(this.node, false);
+    var clone = stagingDocument.importNode(this.node, false);
+
+    if (clone instanceof HTMLTemplateElement)
+      clone.instanceRef_ = this.node.content;
+
+    return clone;
   }
 }
 
@@ -331,10 +336,6 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
     cloneAndBindInstance(clone,
                           bindings.children[i],
                           model, instanceBindings);
-  }
-
-  if (clone instanceof HTMLTemplateElement) {
-    clone.instanceRef_ = bindings.node.content;
   }
 
   for (var i = 0; i < bindings.eventHandlers.length; ++i) {
