@@ -1,5 +1,14 @@
 "use strict";
 
+var emptyInstance = document.createDocumentFragment();
+emptyInstance.bindings_ = [];
+emptyInstance.terminator_ = null;
+
+var REPEAT = 'repeat';
+var IF = 'if';
+
+var stagingDocument = new Document();
+
 function sanitizeValue(value) {
   return value == null ? '' : value;
 }
@@ -42,11 +51,6 @@ function bindNode(node, name, observable, oneTime) {
 
   return observable;
 };
-
-var REPEAT = 'repeat';
-var IF = 'if';
-
-var stagingDocument = new Document();
 
 function createInstance(template, model) {
   var content = template.content;
@@ -345,7 +349,3 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
   processBindings(clone, bindings, model, instanceBindings);
   return clone;
 }
-
-var emptyInstance = document.createDocumentFragment();
-emptyInstance.bindings_ = [];
-emptyInstance.terminator_ = null;
