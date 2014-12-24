@@ -201,23 +201,6 @@ function processBinding(name, tokens, node, model) {
   return new observe.ObserverTransform(observer, tokens.combinator);
 }
 
-function processBindings(node, bindings, model, instanceBindings) {
-  for (var i = 0; i < bindings.properties.length; ++i) {
-    var name = bindings.properties[i].name;
-    var tokens = bindings.properties[i].tokens;
-    var value = processBinding(name, tokens, node, model);
-    var binding = bindNode(node, name, value, tokens.onlyOneTime);
-    if (binding && instanceBindings)
-      instanceBindings.push(binding);
-  }
-
-  if (node instanceof HTMLTemplateElement) {
-    var iter = processTemplateBindings(node, bindings, model);
-    if (instanceBindings && iter)
-      instanceBindings.push(iter);
-  }
-}
-
 function processTemplateBindings(template, directives, model) {
   if (template.iterator_)
     template.iterator_.closeDeps();
@@ -346,6 +329,20 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
                           model, instanceBindings);
   }
 
-  processBindings(clone, bindings, model, instanceBindings);
+  for (var i = 0; i < bindings.properties.length; ++i) {
+    var name = bindings.properties[i].name;
+    var tokens = bindings.properties[i].tokens;
+    var value = processBinding(name, tokens, clone, model);
+    var binding = bindNode(clone, name, value, tokens.onlyOneTime);
+    if (binding && instanceBindings)
+      instanceBindings.push(binding);
+  }
+
+  if (clone instanceof HTMLTemplateElement) {
+    var iter = processTemplateBindings(clone, bindings, model);
+    if (instanceBindings && iter)
+      instanceBindings.push(iter);
+  }
+
   return clone;
 }
