@@ -43,7 +43,6 @@ function bindNode(node, name, observable, oneTime) {
   return observable;
 };
 
-var BIND = 'bind';
 var REPEAT = 'repeat';
 var IF = 'if';
 
@@ -219,7 +218,7 @@ function processTemplateBindings(template, directives, model) {
   if (template.iterator_)
     template.iterator_.closeDeps();
 
-  if (!directives.if && !directives.bind && !directives.repeat) {
+  if (!directives.if && !directives.repeat) {
     if (template.iterator_) {
       template.iterator_.close();
       template.iterator_ = undefined;
@@ -250,7 +249,6 @@ function addEventHandler(element, name, method) {
 class Binding {
   constructor(node) {
     this.if = false;
-    this.bind = false;
     this.repeat = false;
     this.eventHandlers = [];
     this.children = [];
@@ -279,9 +277,6 @@ function parseAttributeBindings(element, binding) {
       if (name == IF) {
         binding.if = parseMustaches(value || '{{}}');
         continue;
-      } else if (name == BIND) {
-        binding.bind = parseMustaches(value || '{{}}');
-        continue;
       } else if (name == REPEAT) {
         binding.repeat = parseMustaches(value || '{{}}');
         continue;
@@ -305,9 +300,6 @@ function parseAttributeBindings(element, binding) {
       tokens: tokens,
     });
   }
-
-  if (binding.if && !binding.bind && !binding.repeat)
-    binding.bind = parseMustaches('{{}}');
 }
 
 function createBindings(node) {

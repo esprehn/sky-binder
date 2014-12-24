@@ -49,13 +49,14 @@ TemplateIterator.prototype = {
       deps.repeat = true;
       deps.oneTime = directives.repeat.onlyOneTime;
       deps.value = processBinding(REPEAT, directives.repeat, template, model);
-    } else {
-      deps.repeat = false;
-      deps.oneTime = directives.bind.onlyOneTime;
-      deps.value = processBinding(BIND, directives.bind, template, model);
     }
 
     var value = deps.value;
+    if (!value) {
+      var bind = parseMustaches('{{}}');
+      value = processBinding('bind', bind, template, model);
+    }
+
     if (!deps.oneTime)
       value = value.open(this.updateIteratedValue, this);
 
