@@ -116,9 +116,6 @@ function parseMustaches(s) {
     tokens.push(''); // TEXT
 
   tokens.hasOnePath = tokens.length === 5;
-  tokens.isSimplePath = tokens.hasOnePath &&
-                        tokens[0] == '' &&
-                        tokens[4] == '';
 
   tokens.combinator = function(values) {
     var newValue = tokens[0];
@@ -138,8 +135,11 @@ function parseMustaches(s) {
 
 function processSinglePathBinding(name, tokens, node, model) {
   var observer = new observe.PathObserver(model, tokens[2]);
-  return tokens.isSimplePath ? observer :
-      new observe.ObserverTransform(observer, tokens.combinator);
+  if (tokens.hasOnePath &&
+      tokens[0] == '' &&
+      tokens[4] == '')
+    return observer;
+  return new observe.ObserverTransform(observer, tokens.combinator);
 }
 
 function processBinding(name, tokens, node, model) {
