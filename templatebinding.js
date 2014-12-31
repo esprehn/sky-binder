@@ -69,21 +69,18 @@ function createInstance(template, model) {
   instance.bindings_ = [];
   instance.terminator_ = null;
 
-  var i = 0;
-  var collectTerminator = false;
-  for (var child = content.firstChild; child; child = child.nextSibling) {
+  var length = map.children.length;
+  for (var i = 0; i < length; ++i) {
+    var clone = cloneAndBindInstance(instance,
+                                     map.children[i],
+                                     model,
+                                     instance.bindings_);
+
     // The terminator of the instance is the clone of the last child of the
     // content. If the last child is an active template, it may produce
     // instances as a result of production, so simply collecting the last
     // child of the instance after it has finished producing may be wrong.
-    if (child.nextSibling === null)
-      collectTerminator = true;
-
-    var clone = cloneAndBindInstance(instance,
-                                     map.children[i++],
-                                     model,
-                                     instance.bindings_);
-    if (collectTerminator)
+    if (i == length - 1)
       instance.terminator_ = clone;
   }
 
