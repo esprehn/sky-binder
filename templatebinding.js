@@ -21,10 +21,8 @@ function updateAttribute(element, name, value) {
   element.setAttribute(name, sanitizeValue(value));
 }
 
-function bindNode(node, name, observable, oneTime) {
+function bindNode(node, name, observable) {
   if (node instanceof Text) {
-    if (oneTime)
-      return updateText(node, observable);
     updateText(node, observable.open(function(value) {
       return updateText(node, value);
     }));
@@ -32,17 +30,10 @@ function bindNode(node, name, observable, oneTime) {
   }
 
   if (name == 'style' || name == 'class') {
-    if (oneTime)
-        return updateAttribute(node, name, observable);
     updateAttribute(node, name, observable.open(function(value) {
       updateAttribute(node, name, value);
     }));
     return observable;
-  }
-
-  if (oneTime) {
-    node[name] = observable;
-    return;
   }
 
   node[name] = observable.open(function(value) {
@@ -98,19 +89,9 @@ function parseMustaches(s) {
   var tokens;
   var length = s.length;
   var startIndex = 0, lastIndex = 0, endIndex = 0;
-  var onlyOneTime = true;
   while (lastIndex < length) {
     var startIndex = s.indexOf('{{', lastIndex);
-    var oneTimeStart = s.indexOf('[[', lastIndex);
-    var oneTime = false;
     var terminator = '}}';
-
-    if (oneTimeStart >= 0 &&
-        (startIndex < 0 || oneTimeStart < startIndex)) {
-      startIndex = oneTimeStart;
-      oneTime = true;
-      terminator = ']]';
-    }
 
     endIndex = startIndex < 0 ? -1 : s.indexOf(terminator, startIndex + 2);
 
@@ -125,8 +106,7 @@ function parseMustaches(s) {
     tokens = tokens || [];
     tokens.push(s.slice(lastIndex, startIndex)); // TEXT
     var pathString = s.slice(startIndex + 2, endIndex).trim();
-    tokens.push(oneTime); // ONE_TIME?
-    onlyOneTime = onlyOneTime && oneTime;
+    tokens.push(false); // ONE_TIME?
     tokens.push(observe.Path.get(pathString)); // PATH
     tokens.push(null); // DELEGATE_FN
     lastIndex = endIndex + 2;
@@ -139,7 +119,6 @@ function parseMustaches(s) {
   tokens.isSimplePath = tokens.hasOnePath &&
                         tokens[0] == '' &&
                         tokens[4] == '';
-  tokens.onlyOneTime = onlyOneTime;
 
   tokens.combinator = function(values) {
     var newValue = tokens[0];
@@ -157,20 +136,6 @@ function parseMustaches(s) {
   return tokens;
 };
 
-function processOneTimeBinding(name, tokens, node, model) {
-  if (tokens.hasOnePath) {
-    var value = tokens[2].getValueFrom(model);
-    return tokens.isSimplePath ? value : tokens.combinator(value);
-  }
-
-  var values = [];
-  for (var i = 1; i < tokens.length; i += 4) {
-    values[(i - 1) / 4] = tokens[i + 1].getValueFrom(model);
-  }
-
-  return tokens.combinator(values);
-}
-
 function processSinglePathBinding(name, tokens, node, model) {
   var observer = new observe.PathObserver(model, tokens[2]);
   return tokens.isSimplePath ? observer :
@@ -178,21 +143,14 @@ function processSinglePathBinding(name, tokens, node, model) {
 }
 
 function processBinding(name, tokens, node, model) {
-  if (tokens.onlyOneTime)
-    return processOneTimeBinding(name, tokens, node, model);
-
   if (tokens.hasOnePath)
     return processSinglePathBinding(name, tokens, node, model);
 
   var observer = new observe.CompoundObserver();
 
   for (var i = 1; i < tokens.length; i += 4) {
-    var oneTime = tokens[i];
     var path = tokens[i + 1];
-    if (oneTime)
-      observer.addPath(path.getValueFrom(model))
-    else
-      observer.addPath(model, path);
+    observer.addPath(model, path);
   }
 
   return new observe.ObserverTransform(observer, tokens.combinator);
@@ -330,7 +288,7 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
     var name = bindings.properties[i].name;
     var tokens = bindings.properties[i].tokens;
     var value = processBinding(name, tokens, clone, model);
-    var binding = bindNode(clone, name, value, tokens.onlyOneTime);
+    var binding = bindNode(clone, name, value);
     if (binding)
       instanceBindings.push(binding);
   }
