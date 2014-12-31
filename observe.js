@@ -881,17 +881,13 @@
 
     function identFn(value) { return value; }
 
-    function ObserverTransform(observable, getValueFn, setValueFn,
-                               dontPassThroughSet) {
+    function ObserverTransform(observable, getValueFn, setValueFn) {
       this.callback_ = undefined;
       this.target_ = undefined;
       this.value_ = undefined;
       this.observable_ = observable;
       this.getValueFn_ = getValueFn || identFn;
       this.setValueFn_ = setValueFn || identFn;
-      // TODO(rafaelw): This is a temporary hack. PolymerExpressions needs this
-      // at the moment because of a bug in it's dependency tracking.
-      this.dontPassThroughSet_ = dontPassThroughSet;
     }
 
     ObserverTransform.prototype = {
@@ -923,7 +919,7 @@
 
       setValue: function(value) {
         value = this.setValueFn_(value);
-        if (!this.dontPassThroughSet_ && this.observable_.setValue)
+        if (this.observable_.setValue)
           return this.observable_.setValue(value);
       },
 
