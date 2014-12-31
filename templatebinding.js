@@ -123,8 +123,8 @@ function parseMustaches(s) {
   tokens.combinator = function(values) {
     var newValue = tokens[0];
 
-    for (var i = 1; i < tokens.length; i += 4) {
-      var value = tokens.hasOnePath ? values : values[(i - 1) / 4];
+    for (var i = 1, j = 0; i < tokens.length; i += 4) {
+      var value = tokens.hasOnePath ? values : values[j++];
       if (value !== undefined)
         newValue += value;
       newValue += tokens[i + 3];
