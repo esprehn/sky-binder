@@ -158,10 +158,7 @@ function parseAttributeDirectives(element, directives) {
     var value = attr.value;
 
     if (name.startsWith('on-')) {
-      directives.eventHandlers.push({
-        eventName: name.substring(3),
-        method: value
-      });
+      directives.eventHandlers.push(name.substring(3));
       continue;
     }
 
@@ -173,14 +170,14 @@ function parseAttributeDirectives(element, directives) {
   }
 }
 
-function addEventHandler(element, name, method) {
-  element.addEventListener(name, function(event) {
-    var scope = element.ownerScope;
-    var host = scope.host;
-    var handler = host && host[method];
-    if (handler instanceof Function)
-      return handler.call(host, event);
-  });
+function eventHandlerCallback(event) {
+  var element = event.currentTarget;
+  var method = element.getAttribute('on-' + event.type);
+  var scope = element.ownerScope;
+  var host = scope.host;
+  var handler = host && host[method];
+  if (handler instanceof Function)
+    return handler.call(host, event);
 }
 
 class NodeDirectives {
@@ -216,9 +213,9 @@ class NodeDirectives {
     // registry.
     var clone = stagingDocument.importNode(this.node, false);
 
-    this.eventHandlers.forEach(function(handler) {
-      addEventHandler(clone, handler.eventName, handler.method);
-    });
+    for (var i = 0; i < this.eventHandlers.length; ++i) {
+      clone.addEventListener(this.eventHandlers[i], eventHandlerCallback);
+    }
 
     var clone = parent.appendChild(clone);
 

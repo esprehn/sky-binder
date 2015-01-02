@@ -28,7 +28,9 @@
   </template>
   <div>{{ value }} test {{ red }}{{ className }} test</div>
   <a href="{{ url }}">{{ url }}</a>
-  <span on-click="handleClick">Click me</span>
+  <span on-test-event="handleTestEvent">
+    <span id="target">Test event handler: </span>
+  </span>
   <div class="[[ className ]]">[[ url ]]</div>
 </template>
 
@@ -38,8 +40,8 @@
 window.onload = function() {
   var template = document.getElementById('template');
   var host = document.getElementById('host');
-  host.handleClick = function(e) {
-    console.log(e);
+  host.handleTestEvent = function(e) {
+    e.target.appendChild(new Text("event dispatch success"));
   };
   window.model = {
     value: 10,
@@ -59,5 +61,9 @@ window.onload = function() {
   };
   var instance = createInstance(template, window.model);
   host.createShadowRoot().appendChild(instance.fragment);
+  var target = host.shadowRoot.getElementById("target");
+  target.dispatchEvent(new CustomEvent("test-event", {
+    bubbles: true,
+  }));
 };
 </script>
