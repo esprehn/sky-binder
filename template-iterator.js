@@ -3,6 +3,7 @@
 function TemplateIterator(templateElement) {
   this.closed = false;
   this.templateElement_ = templateElement;
+  this.instanceRef_ = null;
   this.instances = [];
   this.deps = undefined;
   this.iteratedValue = [];
@@ -24,6 +25,8 @@ TemplateIterator.prototype = {
 
     var deps = this.deps = {};
     var template = this.templateElement_;
+
+    this.instanceRef_ = directives.node;
 
     var ifValue = true;
     if (directives.if) {
@@ -205,7 +208,7 @@ TemplateIterator.prototype = {
           if (model === undefined) {
             instance = emptyInstance;
           } else {
-            instance = createInstance(template, model);
+            instance = createInstance(this.instanceRef_, model);
           }
         }
 

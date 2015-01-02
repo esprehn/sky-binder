@@ -37,8 +37,6 @@ function bindNode(node, name, observable) {
 function createInstance(template, model) {
   var content = template.content;
   if (!content.firstChild)
-    content = template.instanceRef_;
-  if (!content.firstChild)
     return emptyInstance;
 
   var map = content.bindingMap_;
@@ -185,9 +183,6 @@ class Binding {
     // custom element registry we're going to need to use the current module's
     // registry.
     var clone = stagingDocument.importNode(this.node, false);
-
-    if (clone instanceof HTMLTemplateElement)
-      clone.instanceRef_ = this.node.content;
 
     this.eventHandlers.forEach(function(handler) {
       addEventHandler(clone, handler.eventName, handler.method);
