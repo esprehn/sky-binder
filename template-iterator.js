@@ -9,7 +9,7 @@ class TemplateIterator {
     this.contentTemplate = null;
     this.instances = [];
     this.deps = {
-      repeat: false,
+      hasRepeat: false,
       ifValue: null,
       value: null,
     };
@@ -43,7 +43,7 @@ class TemplateIterator {
 
     var repeatProperty = directives.findProperty('repeat');
     if (repeatProperty) {
-      deps.repeat = true;
+      deps.hasRepeat = true;
       deps.value = repeatProperty.createObserver(model);
     } else {
       deps.value = new observe.PathObserver(model, observe.Path.get(""));
@@ -87,9 +87,9 @@ class TemplateIterator {
   }
 
   updateValue(value) {
-    if (!this.deps.repeat)
+    if (!this.deps.hasRepeat)
       value = [value];
-    var observe = this.deps.repeat && Array.isArray(value);
+    var observe = this.deps.hasRepeat && Array.isArray(value);
     this.valueChanged(value, observe);
   }
 
