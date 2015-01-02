@@ -4,9 +4,6 @@ var emptyInstance = document.createDocumentFragment();
 emptyInstance.bindings_ = [];
 emptyInstance.terminator_ = null;
 
-var REPEAT = 'repeat';
-var IF = 'if';
-
 var stagingDocument = new Document();
 
 function sanitizeValue(value) {
@@ -207,10 +204,10 @@ function parseAttributeBindings(element, binding) {
     var value = attr.value;
 
     if (element instanceof HTMLTemplateElement) {
-      if (name == IF) {
+      if (name == 'if') {
         binding.if = parseMustaches(value || '{{}}');
         continue;
-      } else if (name == REPEAT) {
+      } else if (name == 'repeat') {
         binding.repeat = parseMustaches(value || '{{}}');
         continue;
       }
