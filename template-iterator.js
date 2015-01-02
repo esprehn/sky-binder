@@ -1,5 +1,7 @@
 "use strict";
 
+var iterators = new WeakMap();
+
 function TemplateIterator(templateElement) {
   this.closed = false;
   this.templateElement_ = templateElement;
@@ -9,6 +11,7 @@ function TemplateIterator(templateElement) {
   this.iteratedValue = [];
   this.presentValue = undefined;
   this.arrayObserver = undefined;
+  iterators.set(templateElement, this);
 }
 
 TemplateIterator.prototype = {
@@ -127,7 +130,7 @@ TemplateIterator.prototype = {
       return terminator;
     }
 
-    var subtemplateIterator = terminator.iterator_;
+    var subtemplateIterator = iterators.get(terminator);
     if (!subtemplateIterator)
       return terminator;
 
@@ -237,7 +240,7 @@ TemplateIterator.prototype = {
 
     this.instances.length = 0;
     this.closeDeps();
-    this.templateElement_.iterator_ = undefined;
+    iterators.delete(this.templateElement_);
     this.closed = true;
   }
 };

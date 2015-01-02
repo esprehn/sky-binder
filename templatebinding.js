@@ -262,7 +262,6 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
 
   if (clone instanceof HTMLTemplateElement) {
     var iterator = new TemplateIterator(clone);
-    clone.iterator_ = iterator;
     iterator.updateDependencies(bindings, model);
     instanceBindings.push(iterator);
   }
