@@ -118,7 +118,7 @@ TemplateIterator.prototype = {
     if (index == -1)
       return this.templateElement_;
     var instance = this.instances[index];
-    var terminator = instance.terminator_;
+    var terminator = instance.terminator;
     if (!terminator)
       return this.getLastInstanceNode(index - 1);
 
@@ -138,12 +138,11 @@ TemplateIterator.prototype = {
     return this.getLastInstanceNode(this.instances.length - 1);
   },
 
-  insertInstanceAt: function(index, fragment) {
+  insertInstanceAt: function(index, instance) {
     var previousInstanceLast = this.getLastInstanceNode(index - 1);
     var parent = this.templateElement_.parentNode;
-    this.instances.splice(index, 0, fragment);
-
-    parent.insertBefore(fragment, previousInstanceLast.nextSibling);
+    this.instances.splice(index, 0, instance);
+    parent.insertBefore(instance.fragment, previousInstanceLast.nextSibling);
   },
 
   extractInstanceAt: function(index) {
@@ -157,7 +156,7 @@ TemplateIterator.prototype = {
       if (node == lastNode)
         lastNode = previousInstanceLast;
 
-      instance.appendChild(parent.removeChild(node));
+      instance.fragment.appendChild(parent.removeChild(node));
     }
 
     return instance;
@@ -221,7 +220,7 @@ TemplateIterator.prototype = {
   },
 
   closeInstanceBindings: function(instance) {
-    var bindings = instance.bindings_;
+    var bindings = instance.bindings;
     for (var i = 0; i < bindings.length; i++) {
       bindings[i].close();
     }

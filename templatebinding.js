@@ -1,11 +1,17 @@
 "use strict";
 (function() {
 
-var emptyInstance = document.createDocumentFragment();
-emptyInstance.bindings_ = [];
-emptyInstance.terminator_ = null;
-
 var stagingDocument = new Document();
+
+class TemplateInstance {
+  constructor() {
+    this.bindings = [];
+    this.terminator = null;
+    this.fragment = stagingDocument.createDocumentFragment();
+  }
+}
+
+var emptyInstance = new TemplateInstance();
 
 function sanitizeValue(value) {
   return value == null ? '' : value;
@@ -48,24 +54,21 @@ function createInstance(template, model) {
     bindingCache.set(content, bindings);
   }
 
-  var instance = stagingDocument.createDocumentFragment();
-
-  instance.bindings_ = [];
-  instance.terminator_ = null;
+  var instance = new TemplateInstance();
 
   var length = bindings.children.length;
   for (var i = 0; i < length; ++i) {
-    var clone = cloneAndBindInstance(instance,
+    var clone = cloneAndBindInstance(instance.fragment,
                                      bindings.children[i],
                                      model,
-                                     instance.bindings_);
+                                     instance.bindings);
 
     // The terminator of the instance is the clone of the last child of the
     // content. If the last child is an active template, it may produce
     // instances as a result of production, so simply collecting the last
     // child of the instance after it has finished producing may be wrong.
     if (i == length - 1)
-      instance.terminator_ = clone;
+      instance.terminator = clone;
   }
 
   return instance;

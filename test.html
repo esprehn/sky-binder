@@ -49,6 +49,7 @@ window.onload = function() {
       className: "orange",
     }],
   };
-  host.createShadowRoot().appendChild(createInstance(template, window.model));
+  var instance = createInstance(template, window.model);
+  host.createShadowRoot().appendChild(instance.fragment);
 };
 </script>
