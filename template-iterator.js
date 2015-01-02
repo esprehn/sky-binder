@@ -36,7 +36,7 @@ TemplateIterator.prototype = {
     if (ifProperty) {
       deps.hasIf = true;
       deps.ifValue = ifProperty.createObserver(model);
-      ifValue = deps.ifValue;
+      ifValue = deps.ifValue.open(this.updateIfValue, this);
     }
 
     var repeatProperty = directives.findProperty('repeat');
@@ -96,8 +96,7 @@ TemplateIterator.prototype = {
   updateValue: function(value) {
     if (!this.deps.repeat)
       value = [value];
-    var observe = this.deps.repeat &&
-                  Array.isArray(value);
+    var observe = this.deps.repeat && Array.isArray(value);
     this.valueChanged(value, observe);
   },
 
