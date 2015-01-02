@@ -8,7 +8,6 @@ function TemplateIterator(templateElement) {
   this.contentTemplate = null;
   this.instances = [];
   this.deps = {
-    hasIf: false,
     repeat: false,
     ifValue: null,
     value: null,
@@ -38,7 +37,6 @@ TemplateIterator.prototype = {
     var ifValue = true;
     var ifProperty = directives.findProperty('if');
     if (ifProperty) {
-      deps.hasIf = true;
       deps.ifValue = ifProperty.createObserver(model);
       ifValue = deps.ifValue.open(this.updateIfValue, this);
     }
@@ -76,7 +74,7 @@ TemplateIterator.prototype = {
   },
 
   updateIteratedValue: function(value) {
-    if (this.deps.hasIf) {
+    if (this.deps.ifValue) {
       var ifValue = this.deps.ifValue;
       ifValue = ifValue.discardChanges();
       if (!ifValue) {
