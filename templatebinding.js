@@ -28,7 +28,7 @@ function createInstance(template, model) {
 
   var directives = directiveCache.get(content);
   if (!directives) {
-    directives = createDirectives(content);
+    directives = new NodeDirectives(content);
     directiveCache.set(content, directives);
   }
 
@@ -50,14 +50,6 @@ function createInstance(template, model) {
   return instance;
 }
 
-class BindingExpression {
-  constructor(prefix, path) {
-    this.prefix = prefix;
-    this.path = observe.Path.get(path);
-    Object.preventExtensions(this);
-  }
-}
-
 function sanitizeValue(value) {
   return value == null ? '' : value;
 }
@@ -68,6 +60,14 @@ function updateText(node, value) {
 
 function updateAttribute(element, name, value) {
   element.setAttribute(name, sanitizeValue(value));
+}
+
+class BindingExpression {
+  constructor(prefix, path) {
+    this.prefix = prefix;
+    this.path = observe.Path.get(path);
+    Object.preventExtensions(this);
+  }
 }
 
 class PropertyDirective {
@@ -147,7 +147,31 @@ function parsePropertyDirective(value, property) {
     result.suffix = value.substring(offset);
 
   return result;
-};
+}
+
+function parseAttributeDirectives(element, directives) {
+  var attributes = element.getAttributes();
+
+  for (var i = 0; i < attributes.length; i++) {
+    var attr = attributes[i];
+    var name = attr.name;
+    var value = attr.value;
+
+    if (name.startsWith('on-')) {
+      directives.eventHandlers.push({
+        eventName: name.substring(3),
+        method: value
+      });
+      continue;
+    }
+
+    var property = parsePropertyDirective(value, name);
+    if (!property)
+      continue;
+
+    directives.properties.push(property);
+  }
+}
 
 function addEventHandler(element, name, method) {
   element.addEventListener(name, function(event) {
@@ -166,6 +190,18 @@ class NodeDirectives {
     this.properties = [];
     this.node = node;
     Object.preventExtensions(this);
+
+    if (node instanceof Element) {
+      parseAttributeDirectives(node, this);
+    } else if (node instanceof Text) {
+      var property = parsePropertyDirective(node.data, 'textContent');
+      if (property)
+        this.properties.push(property);
+    }
+
+    for (var child = node.firstChild; child; child = child.nextSibling) {
+      this.children.push(new NodeDirectives(child));
+    }
   }
   findProperty(name) {
     for (var i = 0; i < this.properties.length; ++i) {
@@ -202,49 +238,6 @@ class NodeDirectives {
 
     return clone;
   }
-}
-
-function parseAttributeDirectives(element, directives) {
-  var attributes = element.getAttributes();
-
-  for (var i = 0; i < attributes.length; i++) {
-    var attr = attributes[i];
-    var name = attr.name;
-    var value = attr.value;
-
-    if (name.startsWith('on-')) {
-      directives.eventHandlers.push({
-        eventName: name.substring(3),
-        method: value
-      });
-      continue;
-    }
-
-    var property = parsePropertyDirective(value, name);
-    if (!property)
-      continue;
-
-    directives.properties.push(property);
-  }
-}
-
-function createDirectives(node) {
-  var directives = new NodeDirectives(node);
-
-  if (node instanceof Element) {
-    parseAttributeDirectives(node, directives);
-  } else if (node instanceof Text) {
-    var property = parsePropertyDirective(node.data, 'textContent');
-    if (property) {
-      directives.properties.push(property);
-    }
-  }
-
-  for (var child = node.firstChild; child; child = child.nextSibling) {
-    directives.children.push(createDirectives(child));
-  }
-
-  return directives;
 }
 
 window.createInstance = createInstance;
