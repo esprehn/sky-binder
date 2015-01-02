@@ -73,8 +73,9 @@ class BindingExpression {
   }
 }
 
-class BindingExpressionList {
-  constructor() {
+class BoundProperty {
+  constructor(name) {
+    this.name = name;
     this.expressions = [];
     this.suffix = "";
     Object.preventExtensions(this);
@@ -101,7 +102,8 @@ class BindingExpressionList {
       return buffer;
     });
   }
-  bindProperty(node, name, model) {
+  bindProperty(node, model) {
+    var name = this.name;
     var observable = this.createObserver(model);
     if (node instanceof Text) {
       updateText(node, observable.open(function(value) {
@@ -120,11 +122,11 @@ class BindingExpressionList {
   }
 }
 
-function parseMustaches(value) {
+function parseMustaches(value, property) {
   if (!value || !value.length)
     return;
 
-  var list;
+  var result;
   var offset = 0;
   var firstIndex = 0;
   var lastIndex = 0;
@@ -139,15 +141,15 @@ function parseMustaches(value) {
     var prefix = value.substring(offset, firstIndex);
     var path = value.substring(firstIndex + 2, lastIndex);
     offset = lastIndex + 2;
-    if (!list)
-      list = new BindingExpressionList();
-    list.expressions.push(new BindingExpression(prefix, path));
+    if (!result)
+      result = new BoundProperty(property);
+    result.expressions.push(new BindingExpression(prefix, path));
   }
 
-  if (list && offset < value.length)
-    list.suffix = value.substring(offset);
+  if (result && offset < value.length)
+    result.suffix = value.substring(offset);
 
-  return list;
+  return result;
 };
 
 function addEventHandler(element, name, method) {
@@ -195,10 +197,10 @@ function parseAttributeBindings(element, binding) {
 
     if (element instanceof HTMLTemplateElement) {
       if (name == 'if') {
-        binding.if = parseMustaches(value);
+        binding.if = parseMustaches(value, 'if');
         continue;
       } else if (name == 'repeat') {
-        binding.repeat = parseMustaches(value);
+        binding.repeat = parseMustaches(value, 'repeat');
         continue;
       }
     }
@@ -211,14 +213,11 @@ function parseAttributeBindings(element, binding) {
       continue;
     }
 
-    var expressions = parseMustaches(value);
-    if (!expressions)
+    var property = parseMustaches(value, name);
+    if (!property)
       continue;
 
-    binding.properties.push({
-      name: name,
-      expressions: expressions,
-    });
+    binding.properties.push(property);
   }
 }
 
@@ -228,12 +227,9 @@ function createBindings(node) {
   if (node instanceof Element) {
     parseAttributeBindings(node, binding);
   } else if (node instanceof Text) {
-    var expressions = parseMustaches(node.data);
-    if (expressions) {
-      binding.properties.push({
-        name: 'textContent',
-        expressions: expressions,
-      });
+    var property = parseMustaches(node.data, 'textContent');
+    if (property) {
+      binding.properties.push(property);
     }
   }
 
@@ -254,9 +250,7 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
   }
 
   for (var i = 0; i < bindings.properties.length; ++i) {
-    var name = bindings.properties[i].name;
-    var expressions = bindings.properties[i].expressions;
-    var observer = expressions.bindProperty(clone, name, model);
+    var observer = bindings.properties[i].bindProperty(clone, model);
     instanceBindings.push(observer);
   }
 
