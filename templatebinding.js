@@ -36,10 +36,8 @@ function createInstance(template, model) {
 
   var length = directives.children.length;
   for (var i = 0; i < length; ++i) {
-    var clone = cloneAndBindInstance(instance.fragment,
-                                     directives.children[i],
-                                     model,
-                                     instance.bindings);
+    var clone = directives.children[i].createBoundClone(instance.fragment,
+        model, instance.bindings);
 
     // The terminator of the instance is the clone of the last child of the
     // content. If the last child is an active template, it may produce
@@ -176,7 +174,7 @@ class NodeDirectives {
     }
     return null;
   }
-  cloneNode() {
+  createBoundClone(parent, model, bindings) {
     // TODO(esprehn): In sky instead of needing to use a staging docuemnt per
     // custom element registry we're going to need to use the current module's
     // registry.
@@ -185,6 +183,22 @@ class NodeDirectives {
     this.eventHandlers.forEach(function(handler) {
       addEventHandler(clone, handler.eventName, handler.method);
     });
+
+    var clone = parent.appendChild(clone);
+
+    for (var i = 0; i < this.children.length; ++i) {
+      this.children[i].createBoundClone(clone, model, bindings);
+    }
+
+    for (var i = 0; i < this.properties.length; ++i) {
+      bindings.push(this.properties[i].bindProperty(clone, model));
+    }
+
+    if (clone instanceof HTMLTemplateElement) {
+      var iterator = new TemplateIterator(clone);
+      iterator.updateDependencies(this, model);
+      bindings.push(iterator);
+    }
 
     return clone;
   }
@@ -231,28 +245,6 @@ function createDirectives(node) {
   }
 
   return directives;
-}
-
-function cloneAndBindInstance(parent, directives, model, bindings) {
-  var clone = parent.appendChild(directives.cloneNode());
-
-  for (var i = 0; i < directives.children.length; ++i) {
-    cloneAndBindInstance(clone,
-                          directives.children[i],
-                          model, bindings);
-  }
-
-  for (var i = 0; i < directives.properties.length; ++i) {
-    bindings.push(directives.properties[i].bindProperty(clone, model));
-  }
-
-  if (clone instanceof HTMLTemplateElement) {
-    var iterator = new TemplateIterator(clone);
-    iterator.updateDependencies(directives, model);
-    bindings.push(iterator);
-  }
-
-  return clone;
 }
 
 window.createInstance = createInstance;
