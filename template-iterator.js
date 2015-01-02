@@ -42,8 +42,7 @@ TemplateIterator.prototype = {
 
     var value = deps.value;
     if (!value) {
-      var bind = parseMustaches('{{}}');
-      value = bind.createObserver(model);
+      value = new observe.PathObserver(model, observe.Path.get(""));
     }
 
     value = value.open(this.updateIteratedValue, this);
