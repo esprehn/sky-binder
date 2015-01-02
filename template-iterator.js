@@ -2,34 +2,34 @@
 
 var iterators = new WeakMap();
 
-function TemplateIterator(templateElement) {
-  this.closed = false;
-  this.template = templateElement;
-  this.contentTemplate = null;
-  this.instances = [];
-  this.deps = {
-    repeat: false,
-    ifValue: null,
-    value: null,
-  };
-  Object.preventExtensions(this.deps);
-  this.iteratedValue = [];
-  this.presentValue = undefined;
-  this.arrayObserver = undefined;
-  iterators.set(templateElement, this);
-  Object.preventExtensions(this);
-}
+class TemplateIterator {
+  constructor(templateElement) {
+    this.closed = false;
+    this.template = templateElement;
+    this.contentTemplate = null;
+    this.instances = [];
+    this.deps = {
+      repeat: false,
+      ifValue: null,
+      value: null,
+    };
+    Object.preventExtensions(this.deps);
+    this.iteratedValue = [];
+    this.presentValue = undefined;
+    this.arrayObserver = undefined;
+    iterators.set(templateElement, this);
+    Object.preventExtensions(this);
+  }
 
-TemplateIterator.prototype = {
-  closeDeps: function() {
+  closeDeps() {
     var deps = this.deps;
     if (deps.ifValue)
       deps.ifValue.close();
     if (deps.value)
       deps.value.close();
-  },
+  }
 
-  updateDependencies: function(directives, model) {
+  updateDependencies(directives, model) {
     var deps = this.deps;
 
     this.contentTemplate = directives.node;
@@ -51,29 +51,29 @@ TemplateIterator.prototype = {
 
     var value = deps.value.open(this.updateIteratedValue, this);
     this.updateValue(ifValue ? value : null);
-  },
+  }
 
   /**
    * Gets the updated value of the bind/repeat. This can potentially call
    * user code (if a bindingDelegate is set up) so we try to avoid it if we
    * already have the value in hand (from Observer.open).
    */
-  getUpdatedValue: function() {
+  getUpdatedValue() {
     var value = this.deps.value;
     value = value.discardChanges();
     return value;
-  },
+  }
 
-  updateIfValue: function(ifValue) {
+  updateIfValue(ifValue) {
     if (!ifValue) {
       this.valueChanged();
       return;
     }
 
     this.updateValue(this.getUpdatedValue());
-  },
+  }
 
-  updateIteratedValue: function(value) {
+  updateIteratedValue(value) {
     if (this.deps.ifValue) {
       var ifValue = this.deps.ifValue;
       ifValue = ifValue.discardChanges();
@@ -84,16 +84,16 @@ TemplateIterator.prototype = {
     }
 
     this.updateValue(value);
-  },
+  }
 
-  updateValue: function(value) {
+  updateValue(value) {
     if (!this.deps.repeat)
       value = [value];
     var observe = this.deps.repeat && Array.isArray(value);
     this.valueChanged(value, observe);
-  },
+  }
 
-  valueChanged: function(value, observeValue) {
+  valueChanged(value, observeValue) {
     if (!Array.isArray(value))
       value = [];
 
@@ -109,9 +109,9 @@ TemplateIterator.prototype = {
 
     this.handleSplices(observe.ArrayObserver.calculateSplices(this.presentValue,
                                                       this.iteratedValue));
-  },
+  }
 
-  getLastInstanceNode: function(index) {
+  getLastInstanceNode(index) {
     if (index == -1)
       return this.template;
     var instance = this.instances[index];
@@ -128,20 +128,20 @@ TemplateIterator.prototype = {
       return terminator;
 
     return subtemplateIterator.getLastTemplateNode();
-  },
+  }
 
-  getLastTemplateNode: function() {
+  getLastTemplateNode() {
     return this.getLastInstanceNode(this.instances.length - 1);
-  },
+  }
 
-  insertInstanceAt: function(index, instance) {
+  insertInstanceAt(index, instance) {
     var previousInstanceLast = this.getLastInstanceNode(index - 1);
     var parent = this.template.parentNode;
     this.instances.splice(index, 0, instance);
     parent.insertBefore(instance.fragment, previousInstanceLast.nextSibling);
-  },
+  }
 
-  extractInstanceAt: function(index) {
+  extractInstanceAt(index) {
     var previousInstanceLast = this.getLastInstanceNode(index - 1);
     var lastNode = this.getLastInstanceNode(index);
     var parent = this.template.parentNode;
@@ -156,9 +156,9 @@ TemplateIterator.prototype = {
     }
 
     return instance;
-  },
+  }
 
-  handleSplices: function(splices) {
+  handleSplices(splices) {
     if (this.closed || !splices.length)
       return;
 
@@ -213,17 +213,17 @@ TemplateIterator.prototype = {
     instanceCache.forEach(function(instance) {
       instance.close();
     });
-  },
+  }
 
-  unobserve: function() {
+  unobserve() {
     if (!this.arrayObserver)
       return;
 
     this.arrayObserver.close();
     this.arrayObserver = undefined;
-  },
+  }
 
-  close: function() {
+  close() {
     if (this.closed)
       return;
     this.unobserve();
@@ -236,4 +236,4 @@ TemplateIterator.prototype = {
     iterators.delete(this.template);
     this.closed = true;
   }
-};
+}
