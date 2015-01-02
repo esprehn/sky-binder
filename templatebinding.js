@@ -72,7 +72,7 @@ function updateAttribute(element, name, value) {
   element.setAttribute(name, sanitizeValue(value));
 }
 
-class BoundProperty {
+class PropertyDirective {
   constructor(name) {
     this.name = name;
     this.expressions = [];
@@ -121,7 +121,7 @@ class BoundProperty {
   }
 }
 
-function parseMustaches(value, property) {
+function parsePropertyDirective(value, property) {
   if (!value || !value.length)
     return;
 
@@ -141,7 +141,7 @@ function parseMustaches(value, property) {
     var path = value.substring(firstIndex + 2, lastIndex);
     offset = lastIndex + 2;
     if (!result)
-      result = new BoundProperty(property);
+      result = new PropertyDirective(property);
     result.expressions.push(new BindingExpression(prefix, path));
   }
 
@@ -161,7 +161,7 @@ function addEventHandler(element, name, method) {
   });
 }
 
-class BindingDirectives {
+class NodeDirectives {
   constructor(node) {
     this.eventHandlers = [];
     this.children = [];
@@ -190,7 +190,7 @@ class BindingDirectives {
   }
 }
 
-function parseAttributeBindings(element, directives) {
+function parseAttributeDirectives(element, directives) {
   var attributes = element.getAttributes();
 
   for (var i = 0; i < attributes.length; i++) {
@@ -206,7 +206,7 @@ function parseAttributeBindings(element, directives) {
       continue;
     }
 
-    var property = parseMustaches(value, name);
+    var property = parsePropertyDirective(value, name);
     if (!property)
       continue;
 
@@ -215,12 +215,12 @@ function parseAttributeBindings(element, directives) {
 }
 
 function createDirectives(node) {
-  var directives = new BindingDirectives(node);
+  var directives = new NodeDirectives(node);
 
   if (node instanceof Element) {
-    parseAttributeBindings(node, directives);
+    parseAttributeDirectives(node, directives);
   } else if (node instanceof Text) {
-    var property = parseMustaches(node.data, 'textContent');
+    var property = parsePropertyDirective(node.data, 'textContent');
     if (property) {
       directives.properties.push(property);
     }
