@@ -19,19 +19,6 @@ class TemplateInstance {
 }
 
 var emptyInstance = new TemplateInstance();
-
-function sanitizeValue(value) {
-  return value == null ? '' : value;
-}
-
-function updateText(node, value) {
-  node.data = sanitizeValue(value);
-}
-
-function updateAttribute(element, name, value) {
-  element.setAttribute(name, sanitizeValue(value));
-}
-
 var directiveCache = new WeakMap();
 
 function createInstance(template, model) {
@@ -71,6 +58,18 @@ class BindingExpression {
     this.path = observe.Path.get(path);
     Object.preventExtensions(this);
   }
+}
+
+function sanitizeValue(value) {
+  return value == null ? '' : value;
+}
+
+function updateText(node, value) {
+  node.data = sanitizeValue(value);
+}
+
+function updateAttribute(element, name, value) {
+  element.setAttribute(name, sanitizeValue(value));
 }
 
 class BoundProperty {
