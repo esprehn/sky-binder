@@ -7,7 +7,13 @@ function TemplateIterator(templateElement) {
   this.template = templateElement;
   this.contentTemplate = null;
   this.instances = [];
-  this.deps = undefined;
+  this.deps = {
+    hasIf: false,
+    repeat: false,
+    ifValue: null,
+    value: null,
+  };
+  Object.preventExtensions(this.deps);
   this.iteratedValue = [];
   this.presentValue = undefined;
   this.arrayObserver = undefined;
@@ -18,18 +24,14 @@ function TemplateIterator(templateElement) {
 TemplateIterator.prototype = {
   closeDeps: function() {
     var deps = this.deps;
-    if (deps) {
-      if (deps.ifValue)
-        deps.ifValue.close();
-      if (deps.value)
-        deps.value.close();
-    }
+    if (deps.ifValue)
+      deps.ifValue.close();
+    if (deps.value)
+      deps.value.close();
   },
 
   updateDependencies: function(directives, model) {
-    this.closeDeps();
-
-    var deps = this.deps = {};
+    var deps = this.deps;
 
     this.contentTemplate = directives.node;
 
