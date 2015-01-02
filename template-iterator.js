@@ -53,11 +53,6 @@ class TemplateIterator {
     this.updateValue(ifValue ? value : null);
   }
 
-  /**
-   * Gets the updated value of the bind/repeat. This can potentially call
-   * user code (if a bindingDelegate is set up) so we try to avoid it if we
-   * already have the value in hand (from Observer.open).
-   */
   getUpdatedValue() {
     var value = this.deps.value;
     value = value.discardChanges();
