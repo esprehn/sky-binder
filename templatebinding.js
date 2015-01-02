@@ -8,6 +8,7 @@ class TemplateInstance {
     this.bindings = [];
     this.terminator = null;
     this.fragment = stagingDocument.createDocumentFragment();
+    Object.preventExtensions(this);
   }
 }
 
