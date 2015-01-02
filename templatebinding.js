@@ -1,4 +1,5 @@
 "use strict";
+(function() {
 
 var emptyInstance = document.createDocumentFragment();
 emptyInstance.bindings_ = [];
@@ -258,3 +259,8 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
 
   return clone;
 }
+
+window.createInstance = createInstance;
+window.emptyInstance = emptyInstance;
+
+})();
