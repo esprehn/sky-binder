@@ -164,15 +164,19 @@ function addEventHandler(element, name, method) {
 
 class BindingDirectives {
   constructor(node) {
-    this.if = null;
-    this.repeat = null;
     this.eventHandlers = [];
     this.children = [];
     this.properties = [];
     this.node = node;
     Object.preventExtensions(this);
   }
-
+  findProperty(name) {
+    for (var i = 0; i < this.properties.length; ++i) {
+      if (this.properties[i].name === name)
+        return this.properties[i];
+    }
+    return null;
+  }
   cloneNode() {
     // TODO(esprehn): In sky instead of needing to use a staging docuemnt per
     // custom element registry we're going to need to use the current module's
@@ -194,16 +198,6 @@ function parseAttributeBindings(element, directives) {
     var attr = attributes[i];
     var name = attr.name;
     var value = attr.value;
-
-    if (element instanceof HTMLTemplateElement) {
-      if (name == 'if') {
-        directives.if = parseMustaches(value, 'if');
-        continue;
-      } else if (name == 'repeat') {
-        directives.repeat = parseMustaches(value, 'repeat');
-        continue;
-      }
-    }
 
     if (name.startsWith('on-')) {
       directives.eventHandlers.push({

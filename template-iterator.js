@@ -32,15 +32,17 @@ TemplateIterator.prototype = {
     this.instanceRef_ = directives.node;
 
     var ifValue = true;
-    if (directives.if) {
+    var ifProperty = directives.findProperty('if');
+    if (ifProperty) {
       deps.hasIf = true;
-      deps.ifValue = directives.if.createObserver(model);
+      deps.ifValue = ifProperty.createObserver(model);
       ifValue = deps.ifValue;
     }
 
-    if (directives.repeat) {
+    var repeatProperty = directives.findProperty('repeat');
+    if (repeatProperty) {
       deps.repeat = true;
-      deps.value = directives.repeat.createObserver(model);
+      deps.value = repeatProperty.createObserver(model);
     }
 
     var value = deps.value;
