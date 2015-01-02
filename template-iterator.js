@@ -4,8 +4,8 @@ var iterators = new WeakMap();
 
 function TemplateIterator(templateElement) {
   this.closed = false;
-  this.templateElement_ = templateElement;
-  this.instanceRef_ = null;
+  this.template = templateElement;
+  this.contentTemplate = null;
   this.instances = [];
   this.deps = undefined;
   this.iteratedValue = [];
@@ -29,9 +29,8 @@ TemplateIterator.prototype = {
     this.closeDeps();
 
     var deps = this.deps = {};
-    var template = this.templateElement_;
 
-    this.instanceRef_ = directives.node;
+    this.contentTemplate = directives.node;
 
     var ifValue = true;
     var ifProperty = directives.findProperty('if');
@@ -117,14 +116,13 @@ TemplateIterator.prototype = {
 
   getLastInstanceNode: function(index) {
     if (index == -1)
-      return this.templateElement_;
+      return this.template;
     var instance = this.instances[index];
     var terminator = instance.terminator;
     if (!terminator)
       return this.getLastInstanceNode(index - 1);
 
-    if (!(terminator instanceof Element) ||
-        this.templateElement_ === terminator) {
+    if (!(terminator instanceof Element) || this.template === terminator) {
       return terminator;
     }
 
@@ -141,7 +139,7 @@ TemplateIterator.prototype = {
 
   insertInstanceAt: function(index, instance) {
     var previousInstanceLast = this.getLastInstanceNode(index - 1);
-    var parent = this.templateElement_.parentNode;
+    var parent = this.template.parentNode;
     this.instances.splice(index, 0, instance);
     parent.insertBefore(instance.fragment, previousInstanceLast.nextSibling);
   },
@@ -149,7 +147,7 @@ TemplateIterator.prototype = {
   extractInstanceAt: function(index) {
     var previousInstanceLast = this.getLastInstanceNode(index - 1);
     var lastNode = this.getLastInstanceNode(index);
-    var parent = this.templateElement_.parentNode;
+    var parent = this.template.parentNode;
     var instance = this.instances.splice(index, 1)[0];
 
     while (lastNode !== previousInstanceLast) {
@@ -167,7 +165,7 @@ TemplateIterator.prototype = {
     if (this.closed || !splices.length)
       return;
 
-    var template = this.templateElement_;
+    var template = this.template;
 
     if (!template.parentNode) {
       this.close();
@@ -207,7 +205,7 @@ TemplateIterator.prototype = {
           if (model === undefined) {
             instance = emptyInstance;
           } else {
-            instance = createInstance(this.instanceRef_, model);
+            instance = createInstance(this.contentTemplate, model);
           }
         }
 
@@ -238,7 +236,7 @@ TemplateIterator.prototype = {
 
     this.instances.length = 0;
     this.closeDeps();
-    iterators.delete(this.templateElement_);
+    iterators.delete(this.template);
     this.closed = true;
   }
 };
