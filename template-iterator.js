@@ -54,12 +54,7 @@ TemplateIterator.prototype = {
 
     value = value.open(this.updateIteratedValue, this);
 
-    if (!ifValue) {
-      this.valueChanged();
-      return;
-    }
-
-    this.updateValue(value);
+    this.updateValue(ifValue ? value : undefined);
   },
 
   /**
