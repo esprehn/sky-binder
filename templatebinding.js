@@ -32,22 +32,6 @@ function updateAttribute(element, name, value) {
   element.setAttribute(name, sanitizeValue(value));
 }
 
-function bindNode(node, name, observable) {
-  if (node instanceof Text) {
-    updateText(node, observable.open(function(value) {
-      return updateText(node, value);
-    }));
-  } else if (name == 'style' || name == 'class') {
-    updateAttribute(node, name, observable.open(function(value) {
-      updateAttribute(node, name, value);
-    }));
-  } else {
-    node[name] = observable.open(function(value) {
-      node[name] = value;
-    });
-  }
-};
-
 var bindingCache = new WeakMap();
 
 function createInstance(template, model) {
@@ -116,6 +100,23 @@ class BindingExpressionList {
       buffer += suffix;
       return buffer;
     });
+  }
+  bindProperty(node, name, model) {
+    var observable = this.createObserver(model);
+    if (node instanceof Text) {
+      updateText(node, observable.open(function(value) {
+        return updateText(node, value);
+      }));
+    } else if (name == 'style' || name == 'class') {
+      updateAttribute(node, name, observable.open(function(value) {
+        updateAttribute(node, name, value);
+      }));
+    } else {
+      node[name] = observable.open(function(value) {
+        node[name] = value;
+      });
+    }
+    return observable;
   }
 }
 
@@ -255,8 +256,7 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
   for (var i = 0; i < bindings.properties.length; ++i) {
     var name = bindings.properties[i].name;
     var expressions = bindings.properties[i].expressions;
-    var observer = expressions.createObserver(model);
-    bindNode(clone, name, observer);
+    var observer = expressions.bindProperty(clone, name, model);
     instanceBindings.push(observer);
   }
 
