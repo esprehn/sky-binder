@@ -14,10 +14,8 @@ TemplateIterator.prototype = {
   closeDeps: function() {
     var deps = this.deps;
     if (deps) {
-      if (deps.ifOneTime === false)
-        deps.ifValue.close();
-      if (deps.oneTime === false)
-        deps.value.close();
+      deps.ifValue.close();
+      deps.value.close();
     }
   },
 
@@ -30,24 +28,12 @@ TemplateIterator.prototype = {
     var ifValue = true;
     if (directives.if) {
       deps.hasIf = true;
-      deps.ifOneTime = directives.if.onlyOneTime;
       deps.ifValue = directives.if.createObserver(model);
-
       ifValue = deps.ifValue;
-
-      // oneTime if & predicate is false. nothing else to do.
-      if (deps.ifOneTime && !ifValue) {
-        this.valueChanged();
-        return;
-      }
-
-      if (!deps.ifOneTime)
-        ifValue = ifValue.open(this.updateIfValue, this);
     }
 
     if (directives.repeat) {
       deps.repeat = true;
-      deps.oneTime = directives.repeat.onlyOneTime;
       deps.value = directives.repeat.createObserver(model);
     }
 
@@ -57,8 +43,7 @@ TemplateIterator.prototype = {
       value = bind.createObserver(model);
     }
 
-    if (!deps.oneTime)
-      value = value.open(this.updateIteratedValue, this);
+    value = value.open(this.updateIteratedValue, this);
 
     if (!ifValue) {
       this.valueChanged();
@@ -75,8 +60,7 @@ TemplateIterator.prototype = {
    */
   getUpdatedValue: function() {
     var value = this.deps.value;
-    if (!this.deps.oneTime)
-      value = value.discardChanges();
+    value = value.discardChanges();
     return value;
   },
 
@@ -92,8 +76,7 @@ TemplateIterator.prototype = {
   updateIteratedValue: function(value) {
     if (this.deps.hasIf) {
       var ifValue = this.deps.ifValue;
-      if (!this.deps.ifOneTime)
-        ifValue = ifValue.discardChanges();
+      ifValue = ifValue.discardChanges();
       if (!ifValue) {
         this.valueChanged();
         return;
@@ -107,7 +90,6 @@ TemplateIterator.prototype = {
     if (!this.deps.repeat)
       value = [value];
     var observe = this.deps.repeat &&
-                  !this.deps.oneTime &&
                   Array.isArray(value);
     this.valueChanged(value, observe);
   },
