@@ -50,7 +50,7 @@ TemplateIterator.prototype = {
     }
 
     var value = deps.value.open(this.updateIteratedValue, this);
-    this.updateValue(ifValue ? value : undefined);
+    this.updateValue(ifValue ? value : null);
   },
 
   /**
@@ -199,7 +199,7 @@ TemplateIterator.prototype = {
         if (instance) {
           instanceCache.delete(model);
         } else {
-          if (model === undefined) {
+          if (model === undefined || model === null) {
             instance = emptyInstance;
           } else {
             instance = createInstance(this.contentTemplate, model);

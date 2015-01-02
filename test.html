@@ -23,6 +23,9 @@
   <template if="{{ testFalse }}">
     Should not be visible.
   </template>
+  <template repeat="{{ nullInstances }}">
+    Should not be visible.
+  </template>
   <div>{{ value }} test {{ red }}{{ className }} test</div>
   <a href="{{ url }}">{{ url }}</a>
   <span on-click="handleClick">Click me</span>
@@ -42,6 +45,7 @@ window.onload = function() {
     value: 10,
     test: true,
     testFalse: false,
+    nullInstances: [null],
     url: "http://www.google.com/",
     red: "red",
     className: "blue",
