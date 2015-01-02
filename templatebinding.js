@@ -183,10 +183,10 @@ function parseAttributeBindings(element, binding) {
 
     if (element instanceof HTMLTemplateElement) {
       if (name == 'if') {
-        binding.if = parseMustaches(value || '{{}}');
+        binding.if = parseMustaches(value);
         continue;
       } else if (name == 'repeat') {
-        binding.repeat = parseMustaches(value || '{{}}');
+        binding.repeat = parseMustaches(value);
         continue;
       }
     }
