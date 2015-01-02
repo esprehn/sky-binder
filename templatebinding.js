@@ -34,14 +34,17 @@ function bindNode(node, name, observable) {
   }
 };
 
+var bindingCache = new WeakMap();
+
 function createInstance(template, model) {
   var content = template.content;
   if (!content.firstChild)
     return emptyInstance;
 
-  var map = content.bindingMap_;
-  if (!map) {
-    map = content.bindingMap_ = createBindings(content);
+  var bindings = bindingCache.get(content);
+  if (!bindings) {
+    bindings = createBindings(content);
+    bindingCache.set(content, bindings);
   }
 
   var instance = stagingDocument.createDocumentFragment();
@@ -49,10 +52,10 @@ function createInstance(template, model) {
   instance.bindings_ = [];
   instance.terminator_ = null;
 
-  var length = map.children.length;
+  var length = bindings.children.length;
   for (var i = 0; i < length; ++i) {
     var clone = cloneAndBindInstance(instance,
-                                     map.children[i],
+                                     bindings.children[i],
                                      model,
                                      instance.bindings_);
 
