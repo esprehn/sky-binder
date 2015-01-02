@@ -31,7 +31,7 @@ TemplateIterator.prototype = {
     if (directives.if) {
       deps.hasIf = true;
       deps.ifOneTime = directives.if.onlyOneTime;
-      deps.ifValue = processBinding(IF, directives.if, template, model);
+      deps.ifValue = directives.if.createObserver(model);
 
       ifValue = deps.ifValue;
 
@@ -48,13 +48,13 @@ TemplateIterator.prototype = {
     if (directives.repeat) {
       deps.repeat = true;
       deps.oneTime = directives.repeat.onlyOneTime;
-      deps.value = processBinding(REPEAT, directives.repeat, template, model);
+      deps.value = directives.repeat.createObserver(model);
     }
 
     var value = deps.value;
     if (!value) {
       var bind = parseMustaches('{{}}');
-      value = processBinding('bind', bind, template, model);
+      value = bind.createObserver(model);
     }
 
     if (!deps.oneTime)

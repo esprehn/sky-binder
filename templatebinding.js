@@ -26,21 +26,15 @@ function bindNode(node, name, observable) {
     updateText(node, observable.open(function(value) {
       return updateText(node, value);
     }));
-    return observable;
-  }
-
-  if (name == 'style' || name == 'class') {
+  } else if (name == 'style' || name == 'class') {
     updateAttribute(node, name, observable.open(function(value) {
       updateAttribute(node, name, value);
     }));
-    return observable;
+  } else {
+    node[name] = observable.open(function(value) {
+      node[name] = value;
+    });
   }
-
-  node[name] = observable.open(function(value) {
-    node[name] = value;
-  });
-
-  return observable;
 };
 
 function createInstance(template, model) {
@@ -78,83 +72,71 @@ function createInstance(template, model) {
   return instance;
 }
 
-// Returns
-//   a) undefined if there are no mustaches.
-//   b) [TEXT, (ONE_TIME?, PATH, DELEGATE_FN, TEXT)+] if there is at least
-//      one mustache.
-function parseMustaches(s) {
-  if (!s || !s.length)
+class BindingExpression {
+  constructor(prefix, path) {
+    this.prefix = prefix;
+    this.path = observe.Path.get(path);
+  }
+}
+
+class BindingExpressionList {
+  constructor() {
+    this.expressions = [];
+    this.suffix = "";
+  }
+  createObserver(model) {
+    var expressions = this.expressions;
+    var suffix = this.suffix;
+
+    if (expressions.length == 1 && expressions[0].prefix == "" && suffix == "")
+      return new observe.PathObserver(model, expressions[0].path);
+
+    var observer = new observe.CompoundObserver();
+
+    for (var i = 0; i < expressions.length; ++i)
+      observer.addPath(model, expressions[i].path);
+
+    return new observe.ObserverTransform(observer, function(values) {
+      var buffer = "";
+      for (var i = 0; i < values.length; ++i) {
+        buffer += expressions[i].prefix;
+        buffer += values[i];
+      }
+      buffer += suffix;
+      return buffer;
+    });
+  }
+}
+
+function parseMustaches(value) {
+  if (!value || !value.length)
     return;
 
-  var tokens;
-  var length = s.length;
-  var startIndex = 0, lastIndex = 0, endIndex = 0;
-  while (lastIndex < length) {
-    var startIndex = s.indexOf('{{', lastIndex);
-    var terminator = '}}';
+  var list;
+  var offset = 0;
+  var firstIndex = 0;
+  var lastIndex = 0;
 
-    endIndex = startIndex < 0 ? -1 : s.indexOf(terminator, startIndex + 2);
-
-    if (endIndex < 0) {
-      if (!tokens)
-        return;
-
-      tokens.push(s.slice(lastIndex)); // TEXT
+  while (offset < value.length) {
+    firstIndex = value.indexOf('{{', offset);
+    if (firstIndex == -1)
       break;
-    }
-
-    tokens = tokens || [];
-    tokens.push(s.slice(lastIndex, startIndex)); // TEXT
-    var pathString = s.slice(startIndex + 2, endIndex).trim();
-    tokens.push(false); // ONE_TIME?
-    tokens.push(observe.Path.get(pathString)); // PATH
-    tokens.push(null); // DELEGATE_FN
-    lastIndex = endIndex + 2;
+    lastIndex = value.indexOf('}}', firstIndex + 2);
+    if (lastIndex == -1)
+      lastIndex = value.length;
+    var prefix = value.substring(offset, firstIndex);
+    var path = value.substring(firstIndex + 2, lastIndex);
+    offset = lastIndex + 2;
+    if (!list)
+      list = new BindingExpressionList();
+    list.expressions.push(new BindingExpression(prefix, path));
   }
 
-  if (lastIndex === length)
-    tokens.push(''); // TEXT
+  if (list && offset < value.length)
+    list.suffix = value.substring(offset);
 
-  tokens.hasOnePath = tokens.length === 5;
-
-  tokens.combinator = function(values) {
-    var newValue = tokens[0];
-
-    for (var i = 1, j = 0; i < tokens.length; i += 4) {
-      var value = tokens.hasOnePath ? values : values[j++];
-      if (value !== undefined)
-        newValue += value;
-      newValue += tokens[i + 3];
-    }
-
-    return newValue;
-  }
-
-  return tokens;
+  return list;
 };
-
-function processSinglePathBinding(name, tokens, node, model) {
-  var observer = new observe.PathObserver(model, tokens[2]);
-  if (tokens.hasOnePath &&
-      tokens[0] == '' &&
-      tokens[4] == '')
-    return observer;
-  return new observe.ObserverTransform(observer, tokens.combinator);
-}
-
-function processBinding(name, tokens, node, model) {
-  if (tokens.hasOnePath)
-    return processSinglePathBinding(name, tokens, node, model);
-
-  var observer = new observe.CompoundObserver();
-
-  for (var i = 1; i < tokens.length; i += 4) {
-    var path = tokens[i + 1];
-    observer.addPath(model, path);
-  }
-
-  return new observe.ObserverTransform(observer, tokens.combinator);
-}
 
 function processTemplateBindings(template, directives, model) {
   if (template.iterator_)
@@ -242,13 +224,13 @@ function parseAttributeBindings(element, binding) {
       continue;
     }
 
-    var tokens = parseMustaches(value);
-    if (!tokens)
+    var expressions = parseMustaches(value);
+    if (!expressions)
       continue;
 
     binding.properties.push({
       name: name,
-      tokens: tokens,
+      expressions: expressions,
     });
   }
 }
@@ -259,11 +241,11 @@ function createBindings(node) {
   if (node instanceof Element) {
     parseAttributeBindings(node, binding);
   } else if (node instanceof Text) {
-    var tokens = parseMustaches(node.data);
-    if (tokens) {
+    var expressions = parseMustaches(node.data);
+    if (expressions) {
       binding.properties.push({
         name: 'textContent',
-        tokens: tokens,
+        expressions: expressions,
       });
     }
   }
@@ -286,11 +268,10 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
 
   for (var i = 0; i < bindings.properties.length; ++i) {
     var name = bindings.properties[i].name;
-    var tokens = bindings.properties[i].tokens;
-    var value = processBinding(name, tokens, clone, model);
-    var binding = bindNode(clone, name, value);
-    if (binding)
-      instanceBindings.push(binding);
+    var expressions = bindings.properties[i].expressions;
+    var observer = expressions.createObserver(model);
+    bindNode(clone, name, observer);
+    instanceBindings.push(observer);
   }
 
   if (clone instanceof HTMLTemplateElement) {
