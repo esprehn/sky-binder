@@ -138,28 +138,6 @@ function parseMustaches(value) {
   return list;
 };
 
-function processTemplateBindings(template, directives, model) {
-  if (template.iterator_)
-    template.iterator_.closeDeps();
-
-  if (!directives.if && !directives.repeat) {
-    if (template.iterator_) {
-      template.iterator_.close();
-      template.iterator_ = undefined;
-    }
-
-    return;
-  }
-
-  if (!template.iterator_) {
-    template.iterator_ = new TemplateIterator(template);
-  }
-
-  template.iterator_.updateDependencies(directives, model);
-
-  return template.iterator_;
-};
-
 function addEventHandler(element, name, method) {
   element.addEventListener(name, function(event) {
     var scope = element.ownerScope;
@@ -272,9 +250,10 @@ function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
   }
 
   if (clone instanceof HTMLTemplateElement) {
-    var iter = processTemplateBindings(clone, bindings, model);
-    if (iter)
-      instanceBindings.push(iter);
+    var iterator = new TemplateIterator(clone);
+    clone.iterator_ = iterator;
+    iterator.updateDependencies(bindings, model);
+    instanceBindings.push(iterator);
   }
 
   return clone;
