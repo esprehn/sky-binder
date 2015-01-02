@@ -47,15 +47,11 @@ TemplateIterator.prototype = {
     if (repeatProperty) {
       deps.repeat = true;
       deps.value = repeatProperty.createObserver(model);
+    } else {
+      deps.value = new observe.PathObserver(model, observe.Path.get(""));
     }
 
-    var value = deps.value;
-    if (!value) {
-      value = new observe.PathObserver(model, observe.Path.get(""));
-    }
-
-    value = value.open(this.updateIteratedValue, this);
-
+    var value = deps.value.open(this.updateIteratedValue, this);
     this.updateValue(ifValue ? value : undefined);
   },
 
