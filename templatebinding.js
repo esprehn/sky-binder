@@ -164,8 +164,8 @@ function addEventHandler(element, name, method) {
 
 class BindingDirectives {
   constructor(node) {
-    this.if = false;
-    this.repeat = false;
+    this.if = null;
+    this.repeat = null;
     this.eventHandlers = [];
     this.children = [];
     this.properties = [];
