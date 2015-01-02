@@ -12,6 +12,7 @@ function TemplateIterator(templateElement) {
   this.presentValue = undefined;
   this.arrayObserver = undefined;
   iterators.set(templateElement, this);
+  Object.preventExtensions(this);
 }
 
 TemplateIterator.prototype = {
