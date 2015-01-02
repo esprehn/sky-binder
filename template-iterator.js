@@ -215,15 +215,8 @@ TemplateIterator.prototype = {
     }
 
     instanceCache.forEach(function(instance) {
-      this.closeInstanceBindings(instance);
-    }, this);
-  },
-
-  closeInstanceBindings: function(instance) {
-    var bindings = instance.bindings;
-    for (var i = 0; i < bindings.length; i++) {
-      bindings[i].close();
-    }
+      instance.close();
+    });
   },
 
   unobserve: function() {
@@ -239,7 +232,7 @@ TemplateIterator.prototype = {
       return;
     this.unobserve();
     for (var i = 0; i < this.instances.length; i++) {
-      this.closeInstanceBindings(this.instances[i]);
+      this.instances[i].close();
     }
 
     this.instances.length = 0;

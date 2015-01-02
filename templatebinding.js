@@ -10,6 +10,12 @@ class TemplateInstance {
     this.fragment = stagingDocument.createDocumentFragment();
     Object.preventExtensions(this);
   }
+  close() {
+    var bindings = this.bindings;
+    for (var i = 0; i < bindings.length; i++) {
+      bindings[i].close();
+    }
+  }
 }
 
 var emptyInstance = new TemplateInstance();
