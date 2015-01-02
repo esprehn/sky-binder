@@ -18,8 +18,10 @@ TemplateIterator.prototype = {
   closeDeps: function() {
     var deps = this.deps;
     if (deps) {
-      deps.ifValue.close();
-      deps.value.close();
+      if (deps.ifValue)
+        deps.ifValue.close();
+      if (deps.value)
+        deps.value.close();
     }
   },
 
