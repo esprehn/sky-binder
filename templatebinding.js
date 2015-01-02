@@ -32,25 +32,25 @@ function updateAttribute(element, name, value) {
   element.setAttribute(name, sanitizeValue(value));
 }
 
-var bindingCache = new WeakMap();
+var directiveCache = new WeakMap();
 
 function createInstance(template, model) {
   var content = template.content;
   if (!content.firstChild)
     return emptyInstance;
 
-  var bindings = bindingCache.get(content);
-  if (!bindings) {
-    bindings = createBindings(content);
-    bindingCache.set(content, bindings);
+  var directives = directiveCache.get(content);
+  if (!directives) {
+    directives = createDirectives(content);
+    directiveCache.set(content, directives);
   }
 
   var instance = new TemplateInstance();
 
-  var length = bindings.children.length;
+  var length = directives.children.length;
   for (var i = 0; i < length; ++i) {
     var clone = cloneAndBindInstance(instance.fragment,
-                                     bindings.children[i],
+                                     directives.children[i],
                                      model,
                                      instance.bindings);
 
@@ -162,7 +162,7 @@ function addEventHandler(element, name, method) {
   });
 }
 
-class Binding {
+class BindingDirectives {
   constructor(node) {
     this.if = false;
     this.repeat = false;
@@ -187,7 +187,7 @@ class Binding {
   }
 }
 
-function parseAttributeBindings(element, binding) {
+function parseAttributeBindings(element, directives) {
   var attributes = element.getAttributes();
 
   for (var i = 0; i < attributes.length; i++) {
@@ -197,16 +197,16 @@ function parseAttributeBindings(element, binding) {
 
     if (element instanceof HTMLTemplateElement) {
       if (name == 'if') {
-        binding.if = parseMustaches(value, 'if');
+        directives.if = parseMustaches(value, 'if');
         continue;
       } else if (name == 'repeat') {
-        binding.repeat = parseMustaches(value, 'repeat');
+        directives.repeat = parseMustaches(value, 'repeat');
         continue;
       }
     }
 
     if (name.startsWith('on-')) {
-      binding.eventHandlers.push({
+      directives.eventHandlers.push({
         eventName: name.substring(3),
         method: value
       });
@@ -217,47 +217,46 @@ function parseAttributeBindings(element, binding) {
     if (!property)
       continue;
 
-    binding.properties.push(property);
+    directives.properties.push(property);
   }
 }
 
-function createBindings(node) {
-  var binding = new Binding(node);
+function createDirectives(node) {
+  var directives = new BindingDirectives(node);
 
   if (node instanceof Element) {
-    parseAttributeBindings(node, binding);
+    parseAttributeBindings(node, directives);
   } else if (node instanceof Text) {
     var property = parseMustaches(node.data, 'textContent');
     if (property) {
-      binding.properties.push(property);
+      directives.properties.push(property);
     }
   }
 
   for (var child = node.firstChild; child; child = child.nextSibling) {
-    binding.children.push(createBindings(child));
+    directives.children.push(createDirectives(child));
   }
 
-  return binding;
+  return directives;
 }
 
-function cloneAndBindInstance(parent, bindings, model, instanceBindings) {
-  var clone = parent.appendChild(bindings.cloneNode());
+function cloneAndBindInstance(parent, directives, model, bindings) {
+  var clone = parent.appendChild(directives.cloneNode());
 
-  for (var i = 0; i < bindings.children.length; ++i) {
+  for (var i = 0; i < directives.children.length; ++i) {
     cloneAndBindInstance(clone,
-                          bindings.children[i],
-                          model, instanceBindings);
+                          directives.children[i],
+                          model, bindings);
   }
 
-  for (var i = 0; i < bindings.properties.length; ++i) {
-    var observer = bindings.properties[i].bindProperty(clone, model);
-    instanceBindings.push(observer);
+  for (var i = 0; i < directives.properties.length; ++i) {
+    bindings.push(directives.properties[i].bindProperty(clone, model));
   }
 
   if (clone instanceof HTMLTemplateElement) {
     var iterator = new TemplateIterator(clone);
-    iterator.updateDependencies(bindings, model);
-    instanceBindings.push(iterator);
+    iterator.updateDependencies(directives, model);
+    bindings.push(iterator);
   }
 
   return clone;
