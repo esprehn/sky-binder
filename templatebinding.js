@@ -73,6 +73,7 @@ class BindingExpression {
   constructor(prefix, path) {
     this.prefix = prefix;
     this.path = observe.Path.get(path);
+    Object.preventExtensions(this);
   }
 }
 
@@ -80,6 +81,7 @@ class BindingExpressionList {
   constructor() {
     this.expressions = [];
     this.suffix = "";
+    Object.preventExtensions(this);
   }
   createObserver(model) {
     var expressions = this.expressions;
