@@ -4,60 +4,46 @@
 var iterators = new WeakMap();
 
 class TemplateIterator {
-  constructor(templateElement) {
+  constructor(element) {
     this.closed = false;
-    this.template = templateElement;
+    this.template = element;
     this.contentTemplate = null;
     this.instances = [];
-    this.deps = {
-      hasRepeat: false,
-      ifValue: null,
-      value: null,
-    };
-    Object.preventExtensions(this.deps);
+    this.hasRepeat = false;
+    this.ifObserver = null;
+    this.valueObserver = null;
     this.iteratedValue = [];
-    this.presentValue = undefined;
-    this.arrayObserver = undefined;
-    iterators.set(templateElement, this);
+    this.presentValue = null;
+    this.arrayObserver = null;
     Object.preventExtensions(this);
-  }
-
-  closeDeps() {
-    var deps = this.deps;
-    if (deps.ifValue)
-      deps.ifValue.close();
-    if (deps.value)
-      deps.value.close();
+    iterators.set(element, this);
   }
 
   updateDependencies(directives, model) {
-    var deps = this.deps;
-
     this.contentTemplate = directives.node;
 
     var ifValue = true;
     var ifProperty = directives.findProperty('if');
     if (ifProperty) {
-      deps.ifValue = ifProperty.createObserver(model);
-      ifValue = deps.ifValue.open(this.updateIfValue, this);
+      this.ifObserver = ifProperty.createObserver(model);
+      ifValue = this.ifObserver.open(this.updateIfValue, this);
     }
 
     var repeatProperty = directives.findProperty('repeat');
     if (repeatProperty) {
-      deps.hasRepeat = true;
-      deps.value = repeatProperty.createObserver(model);
+      this.hasRepeat = true;
+      this.valueObserver = repeatProperty.createObserver(model);
     } else {
-      deps.value = new observe.PathObserver(model, observe.Path.get(""));
+      var path = observe.Path.get("");
+      this.valueObserver = new observe.PathObserver(model, path);
     }
 
-    var value = deps.value.open(this.updateIteratedValue, this);
+    var value = this.valueObserver.open(this.updateIteratedValue, this);
     this.updateValue(ifValue ? value : null);
   }
 
   getUpdatedValue() {
-    var value = this.deps.value;
-    value = value.discardChanges();
-    return value;
+    return this.valueObserver.discardChanges();
   }
 
   updateIfValue(ifValue) {
@@ -70,9 +56,8 @@ class TemplateIterator {
   }
 
   updateIteratedValue(value) {
-    if (this.deps.ifValue) {
-      var ifValue = this.deps.ifValue;
-      ifValue = ifValue.discardChanges();
+    if (this.ifObserver) {
+      var ifValue = this.ifObserver.discardChanges();
       if (!ifValue) {
         this.valueChanged();
         return;
@@ -83,9 +68,9 @@ class TemplateIterator {
   }
 
   updateValue(value) {
-    if (!this.deps.hasRepeat)
+    if (!this.hasRepeat)
       value = [value];
-    var observe = this.deps.hasRepeat && Array.isArray(value);
+    var observe = this.hasRepeat && Array.isArray(value);
     this.valueChanged(value, observe);
   }
 
@@ -216,7 +201,7 @@ class TemplateIterator {
       return;
 
     this.arrayObserver.close();
-    this.arrayObserver = undefined;
+    this.arrayObserver = null;
   }
 
   close() {
@@ -228,7 +213,12 @@ class TemplateIterator {
     }
 
     this.instances.length = 0;
-    this.closeDeps();
+
+    if (this.ifBinding)
+      this.ifBinding.close();
+    if (this.binding)
+      this.binding.close();
+
     iterators.delete(this.template);
     this.closed = true;
   }
