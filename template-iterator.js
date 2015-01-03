@@ -1,4 +1,5 @@
 "use strict";
+(function() {
 
 var iterators = new WeakMap();
 
@@ -232,3 +233,7 @@ class TemplateIterator {
     this.closed = true;
   }
 }
+
+window.TemplateIterator = TemplateIterator;
+
+})();
